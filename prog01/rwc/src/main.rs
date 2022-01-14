@@ -87,6 +87,6 @@ mod tests {
 
     #[test]
     fn test09_sherlock_holmes() {
-        test_file("assets/sherlock_holmes.txt", (12759, 109463, 608162))
+        test_file("assets/sherlock_holmes.txt", (12759, 109463, 595402))
     }
 }

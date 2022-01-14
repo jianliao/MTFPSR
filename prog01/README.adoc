@@ -83,7 +83,7 @@ Complete the `+newlines_words_chars+` function:
 
 [source,rust]
 ----
-fn newlines_words_chars(src: &str) -> (u64, u64, u64);
+fn newlines_words_chars(src: &str) -> (u64, u64, u64)
 ----
 
 The `+newlines_words_chars+` function returns a three tuple of`u64` values; the
@@ -102,7 +102,7 @@ You can iterate through the characters in the string slice using:
 
 [source,rust]
 ----
-for c in src.chars() { ... };
+for c in src.chars() { ... }
 ----
 
 There are many useful https://doc.rust-lang.org/std/primitive.char.html[methods
@@ -139,9 +139,9 @@ Complete the `+letter_count+`, `+count_to_frequency+`, and `+letter_frequency+` 
 
 [source,rust]
 ----
-fn letter_count(src: &str) -> [u64; 26];
-fn count_to_frequency(inp: [u64; 26]) -> [f64; 26];
-fn letter_frequency(src: &str) -> [f64; 26];
+fn letter_count(src: &str) -> [u64; 26]
+fn count_to_frequency(inp: [u64; 26]) -> [f64; 26]
+fn letter_frequency(src: &str) -> [f64; 26]
 ----
 
 The `+letter_count+` function returns an array of 26 `u64` values; the first
