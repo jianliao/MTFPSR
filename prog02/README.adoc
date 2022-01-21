@@ -1,0 +1,1276 @@
+# Programming Assignment 02
+:icons: font
+
+In this programming assignment, you will implement a mini-language called Birch.
+Birch is a simple stack-based language, similar in spirit to languages such as
+PostScript and Forth, and somewhat more distantly related to the language of the
+Java Virtual Machine.  The goal is to gain experience working with `struct`-s,
+`enum`-s, and `Vec`-s and managing simple object ownership.
+
+## Sources and Submission
+
+:duetime: 11:59pm
+:dueday: Friday, January 29, 2022
+
+Sources for Programming Assignment&nbsp;02 have been (or will shortly be)
+committed to your repository in the `prog02` sub-directory.  If you cloned your
+repository before the Programming Assignment&nbsp;02 sources have been
+committed, then you will need to _pull_ the upstream changes into your local
+clone, by running the command:
+
+  git pull origin
+
+from the `__ritid__psr` directory.  It is best to _pull_ with no uncommitted
+changes in your local clone, but most commits made to the upstream repository
+will only add a new top-level directory and there should be no merge conflicts.
+
+We will tag homeworks in the Git repositories at {duetime} on {dueday}; make
+sure that you have _committed_ and _pushed_ your final version before that time.
+To do so, run the commands:
+
+  git commit -a
+  git push origin master
+
+from the `__ritid__psr` directory.  If old programming assignment comments or
+new programming assignment sources have been committed to your repository since
+you last pulled, then you will receive an error message when trying to push:
+
+  error: failed to push some refs to 'git.cs.rit.edu:psr2215/<ritid>psr.git'
+  hint: Updates were rejected because the remote contains work that you do
+  hint: not have locally. This is usually caused by another repository pushing
+  hint: to the same ref. You may want to first integrate the remote changes
+  hint: (e.g., 'git pull ...') before pushing again.
+  hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+To proceed, you will need to _pull_ the upstream changes into your local clone
+and then _push_ your local changes upstream, by running the commands:
+
+  git pull origin
+  git push origin master
+
+from the `__ritid__psr` directory.
+
+## Birch Language
+
+The characteristic horizontal markings on a birch tree is reminiscent of linear
+data structures, such as sequences and stacks, that are central to the Birch
+language. The Birch language described in this document is inspired by the
+PostFix language described in Design Concepts in Programming Languages by
+Turbak, Gifford, and Sheldon <<DCPL>>.
+
+### Syntax
+
+_Syntax_ describes the _form_ of a programming language--the representation of a
+program as source code.  The Birch language has a very simple syntax:
+
+* a Birch program is a sequence of commands, separated by whitespace (any
+  non-empty sequence of spaces, tabs, and newlines).
+* a Birch command is either:
+** a 64-bit signed integer (e.g., `42`, `-99`, `0`, `4611686018427387904`), or
+** one of the following command keywords: `add`, `sub`, `mul`, `div`, `rem`,
+   `eq`, `lt`, `gt`, `ifz`, `dup`, `pop`, `swap`, `rev`, `exec`, or
+** a `[` followed by a sequence of commands (separated by whitespace) followed
+   by a `]`; note that both the initial `[` and terminal `]` must be separated
+   from other commands by whitespace.
+
+Here are some sample Birch programs:
+
+* `3 2 1`
+* `2 2 add`
+* `2 [ 3 mul ] exec`
+* `[ 3 mul ] 2 swap exec`
+* `[ 0 dup exec ] 0 dup exec`
+
+### Semantics
+
+_Semantics_ describes the _meaning_ of a programming language--the behavior of a
+program as computation.  A Birch program executes by manipulating two entities:
+a command stack and a data stack. An element of the data stack is either an
+integer or a command sequence. The integer elements of the data stack are 64-bit
+signed integers. The initial command stack is the Birch program (with the first
+command of the Birch program at the top of the command stack and the last
+command of the Birch program at the bottom of the command stack) and the initial
+data stack is the empty stack. If the command stack is not empty, then a command
+is popped from the command stack and the (resulting) command stack and data
+stack are updated in response to the command. This process is repeated while the
+command stack is not empty. The result of a Birch program is the integer at the
+top the data stack when the command stack is empty. A Birch program signals an
+error if the data stack is empty when the command stack is empty, or if the top
+of the data stack is not an integer when the command stack is empty, or if an
+illegal data element is encountered when updating the command stack and data
+stack in response to a command.
+
+The following summarizes the behavior of individual Birch commands:
+
+* integer _N_: Push the integer _N_ onto the data stack. The integer _N_ is a
+  64-bit signed integer written as an optional minus sign followed by a sequence
+  of one or more decimal digits.
+* `add`: The data stack must have a top element that is an integer (call it
+  _N~1~_) and a next-to-top element that is an integer (call it _N~2~_). Pop
+  these two elements off the data stack and push the integer __N~1~ + N~2~__
+  onto the data stack. (If the data stack has less than two elements or if
+  either element is not an integer, then signal an error.) The other binary
+  arithmetic operators are similar: `sub` pushes __N~1~ − N~2~__ , `mul` pushes
+  __N~1~ * N~2~__ , `div` pushes __N~1~ / N~2~__ (integer division), `rem`
+  pushes __N~1~ % N~2~__ (integer remainder).  (For `div` and `rem`, if _N~2~_
+  is zero, then signal an error.)
+* `eq`: The data stack must have a top element that is an integer (call it
+  _N~1~_) and a next-to-top element that is an integer (call it _N~2~_). Pop
+  these two elements off the data stack; if __N~1~ = N~2~__ , then push the
+  integer 1 onto the data stack, else push the integer 0 onto the data
+  stack. (If the data stack has less than two elements or if either element is
+  not an integer, then signal an error.) The other binary comparision operators
+  are similar: `lt` pushes 1 if __N~1~ < N~2~__ and 0 otherwise and `gt` pushes
+  1 if __N~1~ > N~2~__ and 0 otherwise.
+* `ifz`: The data stack must have three top elements (call them, from the top
+  downward, _E~1~_, _E~2~_, and _E~3~_ ). Pop these elements off the stack. If
+  _E~1~_ is the integer 0, then push _E~2~_ onto the data stack else push _E~3~_
+  onto the data stack. (If the data stack has less than three elements, then
+  signal an error.)
+* `dup`: The data stack must have a top element that is an integer (call it
+  _N_). Pop this element off the data stack. If _N_ is non-negative, then
+  duplicate and push the __N__th element from the top of the data stack onto the
+  data stack (i.e., 0-based indexing). If _N_ is negative, then duplicate and
+  push the __N + 1__st element from the bottom of the data stack onto the data
+  stack (i.e., if _N_ equals −1, then duplicate and push the bottom element of
+  the data stack onto the data stack). (If the data stack is empty, or if the
+  top element is not an integer, or if the resulting data stack has insufficient
+  elements, then signal an error.)
+* `pop`: Pop the top element off the data stack. (If the data stack is empty,
+  then signal an error.)
+* `swap`: Swap the top two elements of the data stack. (If the data stack has
+  less than two elements, then signal an error.)
+* `rev`: Reverse the elements of the data stack.
+* `exec`: The data stack must have a top element that is an command
+  sequence. Pop this command sequence and push these commands onto the command
+  stack, such that the first command of this command sequence becomes the new
+  top of the command stack. (If the data stack is empty or if the top element is
+  not a command sequence, then signal an error.)
+* ``[ _cmd~0~_ _cmd~1~_ ... _cmd~n~_ ]``: Push _cmd~0~_, _cmd~1~_, ..., and
+  _cmd~n~_ (as a command sequence) onto the data stack.
+
+### Examples
+
+Here is a simple Birch program that computes 5 − 10.
+
+[.center,cols=">1,<2",grid=none]
+|===
+| Program
+| `10` `5` `sub`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `10` `5` `sub`
+
+| Data Stack (top ↔ bot)
+|
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `5` `sub`
+
+| Data Stack (top ↔ bot)
+| `10`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `sub`
+
+| Data Stack (top ↔ bot)
+| `5` `10`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+|
+
+| Data Stack (top ↔ bot)
+| `-5`
+
+| ⇓
+|
+
+| Result
+| -5
+
+|===
+
+This Birch program computes 16 / 8; recall that only the top integer of the final stack is returned as the result of the program.
+
+[.center,cols=">1,<2",grid=none]
+|===
+| Program
+| `2 4 8 16 div`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `2 4 8 16 div`
+
+| Data Stack (top ↔ bot)
+|
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `4 8 16 div`
+
+| Data Stack (top ↔ bot)
+| `2`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `8 16 div`
+
+| Data Stack (top ↔ bot)
+| `4 2`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `16 div`
+
+| Data Stack (top ↔ bot)
+| `8 4 2`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `div`
+
+| Data Stack (top ↔ bot)
+| `16 8 4 2`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+|
+
+| Data Stack (top ↔ bot)
+| `2 4 2`
+
+| ⇓
+|
+
+| Result
+| 2
+
+|===
+
+The `dup` command duplicates an element of the data stack; recall that the index
+is first popped off the data stack and then the index is used to compute the
+appropriate element of the data stack.
+
+[.center,cols=">1,<2",grid=none]
+|===
+| Program
+| `3 2 1 1 dup -1 dup add mul add mul`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `3 2 1 1 dup -1 dup add mul add mul`
+
+| Data Stack (top ↔ bot)
+|
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `2 1 1 dup -1 dup add mul add mul`
+
+| Data Stack (top ↔ bot)
+| `3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `1 1 dup -1 dup add mul add mul`
+
+| Data Stack (top ↔ bot)
+| `2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `1 dup -1 dup add mul add mul`
+
+| Data Stack (top ↔ bot)
+| `1 2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `dup -1 dup add mul add mul`
+
+| Data Stack (top ↔ bot)
+| `1 1 2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `-1 dup add mul add mul`
+
+| Data Stack (top ↔ bot)
+| `2 1 2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `dup add mul add mul`
+
+| Data Stack (top ↔ bot)
+| `-1 2 1 2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `add mul add mul`
+
+| Data Stack (top ↔ bot)
+| `3 2 1 2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `mul add mul`
+
+| Data Stack (top ↔ bot)
+| `5 1 2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `add mul`
+
+| Data Stack (top ↔ bot)
+| `5 2 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `mul`
+
+| Data Stack (top ↔ bot)
+| `7 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+|
+
+| Data Stack (top ↔ bot)
+| `21`
+
+| ⇓
+|
+
+| Result
+| 21
+
+|===
+
+An error is signalled if the index is out of range for the data stack.
+
+[.center,cols=">1,<2",grid=none]
+|===
+| Program
+| `1 2 3 dup`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `1 2 3 dup`
+
+| Data Stack (top ↔ bot)
+|
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `2 3 dup`
+
+| Data Stack (top ↔ bot)
+| `1`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `3 dup`
+
+| Data Stack (top ↔ bot)
+| `2 1`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `dup`
+
+| Data Stack (top ↔ bot)
+| `3 2 1`
+
+| ⇓
+|
+
+| Result
+| error _(index out of bounds)_
+
+|===
+
+The ``[ _cmd~1~_ _cmd~2~_ ... _cmd~n~_ ]`` commmand pushes a command sequence
+onto the data stack as a single element and the `exec` command pops a command
+sequence off the data stack and pushes it to the command stack. These command
+sequences act like subroutines, where the arguments and results of the
+subroutine are passed on the stack. In the following Birch program, `4 mul`
+pushes a subroutine that multiplies its argument by 4:
+
+[.center,cols=">1,<2",grid=none]
+|===
+| Program
+| `[ 4 mul ] 3 swap exec`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `[ 4 mul ] 3 swap exec`
+
+| Data Stack (top ↔ bot)
+|
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `3 swap exec`
+
+| Data Stack (top ↔ bot)
+| `[ 4 mul ]`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `swap exec`
+
+| Data Stack (top ↔ bot)
+| `3 [ 4 mul ]`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `exec`
+
+| Data Stack (top ↔ bot)
+| `[ 4 mul ] 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `4 mul`
+
+| Data Stack (top ↔ bot)
+| `3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `mul`
+
+| Data Stack (top ↔ bot)
+| `4 3`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+|
+
+| Data Stack (top ↔ bot)
+| `12`
+
+| ⇓
+|
+
+| Result
+| 12
+
+|===
+
+The `ifz` command selects between two elements based on a test element. By
+packing two executable sequences, `ifz` and `exec` can be used to conditionally
+execute one of the executable sequences. The following Birch program computes
+the absolute value of the first integer in the program. (Try tracing the
+execution of the program if the `-7` is changed to `7`.) Also note that an empty
+executable sequence is pushed onto the data stack by ``[ ]``.
+
+[.center,cols=">1,<2",grid=none]
+|===
+| Program
+| `-7 0 dup 0 gt [ 0 sub ] swap [ ] swap ifz exec`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `-7 0 dup 0 gt [ 0 sub ] swap [ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+|
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `0 dup 0 gt [ 0 sub ] swap [ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `-7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `dup 0 gt [ 0 sub ] swap [ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `0 -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `0 gt [ 0 sub ] swap [ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `-7 -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `gt [ 0 sub ] swap [ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `0 -7 -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `[ 0 sub ] swap [ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `1 -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `swap [ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `[ 0 sub ] 1 -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `[ ] swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `1 [ 0 sub ] -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `swap ifz exec`
+
+| Data Stack (top ↔ bot)
+| `[ ] 1 [ 0 sub ] -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `ifz exec`
+
+| Data Stack (top ↔ bot)
+| `1 [ ] [ 0 sub ] -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `exec`
+
+| Data Stack (top ↔ bot)
+| `[ 0 sub ] -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `0 sub`
+
+| Data Stack (top ↔ bot)
+| `-7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+| `sub`
+
+| Data Stack (top ↔ bot)
+| `0 -7`
+
+| ⇓
+|
+
+| Command Stack (top ↔ bot)
+|
+
+| Data Stack (top ↔ bot)
+| `7`
+
+| ⇓
+|
+
+| Result
+| 7
+
+|===
+
+## link:./birch/src/lib.rs[`birch` Library]
+
+The link:./birch/src/lib.rs[`birch` library crate] implements the Birch
+programming language.  The public types of this crate are:
+
+* `struct Prog(Command<Vec>);`, a
+  https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types[_tuple
+  struct_] wrapping a `Vec<Command>` representing a Birch program as a sequence
+  of commands, where `enum Command { Num(i64), Add, ..., Rev,
+  Cmds(Vec<Command>), Exec };` represents Birch commands.  Note that the first
+  command of a program `prog` is at the top of the stack represented by the
+  vector `prog.0` and the last command of the program is at the bottom of the
+  stack; that is, the first command of the program is at index `prog.0.len() -
+  1` and the last command of the program is index `0`.  ``Prog``'s
+  implementation of the
+  https://doc.rust-lang.org/std/fmt/trait.Display.html[`Display` trait] shows a
+  program according to the syntax described above; that is, the first command is
+  shown to the left and the last command is shown to the right.
+* `struct ProgParseError;`, a
+  https://doc.rust-lang.org/book/ch05-01-defining-structs.html#unit-like-structs-without-any-fields[_unit-like
+  struct_] signalling an error parsing a Birch `Prog` value from a string.
+* `struct ProgExecError;`, a
+  https://doc.rust-lang.org/book/ch05-01-defining-structs.html#unit-like-structs-without-any-fields[_unit-like
+  struct_] signalling an error executing a Birch program.
+
+An extensive test suite is provided in the link:./birch/src/tests.rs[`tests`
+module].
+
+### `Prog::from_str` associated function
+
+**Complete the `from_str` associated function for ``Prog``'s implementation of
+the `FromStr` trait.  (10pts)**
+
+The `Prog` type will implement the
+https://doc.rust-lang.org/std/str/trait.FromStr.html[`FromStr` trait] to parse a
+`Prog` value from a string, according to the syntax described above.  (Note that
+``FromStr``'s
+https://doc.rust-lang.org/std/str/trait.FromStr.html#tymethod.from_str[`from_str`]
+method is often used implicitly, through
+https://doc.rust-lang.org/std/primitive.str.html[`str`]'s
+https://doc.rust-lang.org/std/primitive.str.html#method.parse[`parse`] method.)
+Upon a successful parse, ``Prog``'s `from_str` method will return `Ok(Prog
+{...})`.  On any parse error (unrecognized command or mismatched `[`/`]`),
+``Prog``'s `from_str` associated function will return `Err(ProgParseError)`.
+(In a more robust implementation, the `ProgParseError` type would carry
+additional information about the nature of the parse error.)
+
+[source, rust]
+----
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Prog(Vec<Command>);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ProgParseError;
+impl FromStr for Prog {
+    type Err = ProgParseError;
+    fn from_str(s: &str) -> Result<Prog, ProgParseError> {
+        // Your code here
+        unimplemented!()
+    }
+}
+----
+
+#### Discussion/Hints
+
+The simple syntax of Birch programs should make it relatively easy to parse.
+The
+https://doc.rust-lang.org/std/primitive.str.html#method.split_whitespace[`str::split_whitespace`]
+method can be used to iterate over all of the whitespace-separated words of the
+input:
+
+[source, rust]
+----
+for w: &str in s.split_whitespace() {
+  ...
+}
+----
+
+Although not explicitly called out in the readings, a string literal can be used
+in a pattern:
+
+[source, rust]
+----
+match w {
+  "add" => { ... },
+  ...
+}
+----
+
+And recall that the
+https://doc.rust-lang.org/std/primitive.str.html#method.parse[`str::parse`]
+method can be used to parse a string into a number:
+
+[source, rust]
+----
+match w.parse::<i64>() {
+  Ok(n /* : i64 */) => { ... },
+  Err(err /* : std::num::ParseIntError */) => { ... },
+}
+----
+
+Finally, recall that the first (leftmost) command of the Birch program will
+become the top of the initial command stack and the last (rightmost) command of
+the Birch program will become the bottom of the initial command stack.  The
+https://doc.rust-lang.org/std/primitive.slice.html#method.reverse[`slice::reverse`]
+method may be helpful.
+
+To run only the parsing tests, execute `cargo test` on the `birch` library
+https://doc.rust-lang.org/book/ch11-02-running-tests.html#filtering-to-run-multiple-tests[filtering]
+to run the tests with names that match `test_parse`.
+
+----
+$ cargo test -q --lib -- test_parse
+
+running 269 tests
+.................................................................................................... 100/269
+.................................................................................................... 200/269
+.....................................................................
+test result: ok. 269 passed; 0 failed; 0 ignored; 0 measured; 261 filtered out; finished in 0.01s
+
+----
+
+### `Prog::exec` method
+
+**Complete the `exec` method for `Prog`. (20pts)**
+
+[source, rust]
+----
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Prog(Vec<Command>);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ProgExecError;
+impl Prog {
+    fn exec(&self, trace: bool) -> Result<i64, ProgExecError> {
+        if trace {
+            println!("prog: {}\n", self)
+        }
+
+        let mut cstk = CmdStack::new(self);
+        let mut dstk = DataStack::new();
+
+        let mut step: u64 = 0;
+        loop {
+            if trace {
+                println!("step: {}\ncstk: {}\ndstk: {}\n", step, cstk, dstk)
+            };
+            // Your code here
+            unimplemented!();
+            step += 1;
+        }
+    }
+}
+----
+
+The `exec` method should execute the Birch program according to the semantics
+described above.  A tracing mode is provided, which displays the command
+sequence and data stack at each step of execution.  Upon a successful execution,
+the `exec` will return `Ok(n)`, where `n` is the result of the Birch program
+(i.e., the integer at the top of the data stack when the command stack is
+empty).  On any execution error (if the data stack is empty when the command
+stack is empty, or if the top of the data stack is not an integer when the
+command stack is empty, or if an illegal data element is encountered when
+updating the command stack and data stack in response to a command), the `exec`
+method will return `Err(ProgExecError)`.  (In a more robust implementation, the
+`ProgExecError` type would carry additional information about the nature of the
+execution error.)
+
+#### Discussion/Hints
+
+The seed code provides preliminary / incomplete implementations of the command
+stack and the data stack:
+
+[source, rust]
+----
+#[derive(Debug)]
+struct CmdStack(Vec<Command>);
+impl Display for CmdStack { ... /* provided */ ... }
+impl CmdStack {
+    fn new(prog: &Prog) -> Self {
+        // Your code here
+        unimplemented!();
+    }
+    // Your code here; additional methods as necessary
+}
+
+#[derive(Debug, Clone)]
+enum DataElem {
+    Num(i64),
+    Cmds(Vec<Command>),
+}
+impl Display for DataElem { ... /* provided */ ... }
+#[derive(Debug)]
+struct DataStack(Vec<DataElem>);
+impl Display for DataStack { ... /* provided */ ... }
+impl DataStack {
+    fn new() -> Self {
+        DataStack(Vec::new())
+    }
+    fn push(&mut self, de: DataElem) {
+        self.0.push(de)
+    }
+    fn pop(&mut self) -> Result<DataElem, ProgExecError> {
+        match self.0.pop() {
+            Some(de) => Ok(de),
+            _ => Err(ProgExecError),
+        }
+    }
+    // Your code here; additional methods as necessary
+}
+----
+
+These types (as well as the `Prog` type) are instances of the
+https://doc.rust-lang.org/book/ch19-04-advanced-types.html#using-the-newtype-pattern-for-type-safety-and-abstraction[_newtype
+idiom_], where the types expose a public API that is different from the API of
+the private inner type.  For example, ``Vec<T>``'s `pop` method returns
+`Option<T>`, while ``DataStack``'s `pop` method returns
+`Result<DataElem, ProgExecError>`, capturing the fact that it is always an
+execution error if the data stack is empty when a data element is required.
+This simplifies the implementation of the `eval` method, allowing one to write
+
+[source, rust]
+----
+dstk.pop()?
+----
+
+rather than
+
+[source, rust]
+----
+match dstk.pop() {
+  None => return ProgExecError,
+  Some(de) => de
+}
+----
+
+whenever the top element of the data stack is required.  Consider implementing
+additional `DataStack` methods (that return `Result<???, ProgExecError>`) to
+capture other common cases.  (The reference solution defines `pop_num`,
+`pop_2nums`, and other `DataStack` methods.)
+
+It should be easy to create a new `CmdStack` from a Birch program, but note that
+a `CmdStack` wraps a `Vec<Command>` (an *owned* vector of *owned* commands),
+while ``Prog``'s `exec` method and ``CmdStack``'s `new` associated function only
+have access to a `&Prog` (a *reference* to a program and, therefore, only a
+reference to the wrapped vector of owned commands).  How can the `CmdStack` `new`
+method obtain its own instance of a `Vec<Command>` to be manipulated during
+execution?
+
+When implementing the `dup` Birch command, be mindful of the fact that the `dup`
+Birch command indexes from the top of the data stack and supports negative
+indices to index from the bottom of the data stack, while ``Vec<T>``'s `index`
+method (used via the `v[i]` operation) indexes from the beginning of the vector
+(and the bottom of the stack represented by the vector) and requires an unsigned
+(non-negative) index.  Also, note that `dup` _duplicates_ an element of the data
+stack.
+
+To run only the execution tests, execute `cargo test` on the `birch` library
+https://doc.rust-lang.org/book/ch11-02-running-tests.html#filtering-to-run-multiple-tests[filtering]
+to run the tests with names that match `test_exec`.
+
+----
+$ cargo test -q --lib -- test_exec
+
+running 261 tests
+.................................................................................................... 100/261
+.................................................................................................... 200/261
+.............................................................
+test result: ok. 261 passed; 0 failed; 0 ignored; 0 measured; 269 filtered out; finished in 17.58s
+
+----
+
+## link:./birch/src/main.rs[`birch`] Binary
+
+The `birch` binary executes Birch programs.  The (provided)
+link:./birch/src/main.rs[`./birch/src/main.rs`] handles parsing of command line
+arguments, dispatching to the `birch` library to parse and execute Birch
+programs.
+
+### Command-Line Arguments
+
+The `birch` program uses the https://crates.io/crates/clap[`clap` (`crates.io`)]
+library for parsing command line arguments.
+
+----
+$ cargo -q run -- -h
+birch
+Birch interpreter
+
+USAGE:
+    birch [OPTIONS] <FILE.bir>
+
+ARGS:
+    <FILE.bir>
+
+OPTIONS:
+    -h, --help     Print help information
+    -s, --stats    Report allocation and time statistics
+    -t, --trace    Trace execution
+----
+
+Tracing mode may be helpful after ``Prog``'s `from_str` method is completed
+while working on ``Prog``'s `exec` method.
+
+The statistics are useful for one of the challenge tasks described below.
+
+#### Examples
+
+----
+[matthew@shadow birch]$ cargo -q run -- ./assets/00_example_01.bir
+4
+----
+
+----
+$ cargo -q run -- -t ./assets/00_example_01.bir
+prog: 2 2 add
+
+step: 0
+cstk: 2 2 add
+dstk:
+
+step: 1
+cstk: 2 add
+dstk: 2
+
+step: 2
+cstk: add
+dstk: 2 2
+
+step: 3
+cstk:
+dstk: 4
+
+4
+----
+
+----
+$ cargo -q run -- -s ./assets/00_example_01.bir
+4
+
+allocated   :          9442 bytes
+reallocated :          2732 bytes
+exec time   :  0.0000320020 seconds
+----
+
+----
+$ cargo -q run -- -t -s ./assets/00_example_01.bir
+prog: 2 2 add
+
+step: 0
+cstk: 2 2 add
+dstk:
+
+step: 1
+cstk: 2 add
+dstk: 2
+
+step: 2
+cstk: add
+dstk: 2 2
+
+step: 3
+cstk:
+dstk: 4
+
+4
+
+allocated   :          9638 bytes
+reallocated :          2732 bytes
+exec time   :  0.0000643540 seconds
+----
+
+## Challenges
+
+The following are neither submission requirements nor extra credit work.  They
+are simply opportunities to challenge your understanding of and skills with
+Rust.
+
+### Arbitrary-Precision Integers
+
+As one of the only two types of data manipulated by Birch programs, the utility
+of integers in Birch would be extended if they were arbitrary-precision integers
+(i.e., big ints) rather than fixed-precion integers.
+
+https://crates.io/crates/num-bigint[`num-bigint`] is a pure Rust implementation of arbitrary-precision integers.
+
+Here are some steps to extending the Birch interpreter to support arbitrary-precision integers:
+
+* Add the following line to the link:./birch/Cargo.toml[`Cargo.toml`] file:
++
+--
+----
+num_bigint = "0.4"
+----
+--
+* In the link:./birch/src/lib.rs[`src/lib.rs`] file:
+** Add
++
+--
+[source, rust]
+----
+use num_bigint::BigInt;
+----
+--
++
+and possibly additional `use` declarations.
+** Change the `i64` in the `Command::Num` variant, `DataElem::Num` variant, and ``Prog``'s `eval` method return type to `BigInt`.
+** Fix all the type errors. icon:smile[]
+
+Note that while `i64` is
+https://doc.rust-lang.org/std/marker/trait.Copy.html[`Copy`] and
+https://doc.rust-lang.org/std/clone/trait.Clone.html[`Clone`],
+`num_bigint::BigInt` is only
+https://doc.rust-lang.org/std/clone/trait.Clone.html[`Clone`].
+
+### Additional Birch Commands and Data Elements
+
+After programming in Birch for some time, one might wish that Birch had additional commands and data elements:
+
+* `dup0` Duplicate the top element of the data stack.  (`dup0` is just a single command for the equivalent `0 dup` command sequence.)
+* `swapn`: Pop two indices _N~1~_ and _N~2~_ off the data stack and swap the the element of the data stack indexed by _N~1~_ with the element of the data stack indexed by _N~2~_ (interpreting _N~1~_ and _N~2~_ as in the `dup` command).  (`swap` would then just be a single command for the equivalent `1 0 swapn` command sequence.)
+* `popn`: Pop a non-negative integer _N_ off the data stack and pop _N_ elements from the data stack.  (`pop` would then just be a single command for the equivalent `1 popn`.)
+* `csize`: Push the number of commands in the command stack.
+* `dsize`: Push the number of elements in the data stack.
+* Object Data Elements
++
+--
+Introduce a new kind of data element: an object that is a sequence of data elements, represented by a new `DataElem::Object(Vec<DataElem>)` variant.
+--
++
+** `implode`: Pop a non-negative integer _N_ off the data stack.  Pop _N_ elements off the data stack and push them as a single object.
+** `explode`: Pop an object off the data stack and push its elements onto the data stack.
+** `length`: Pop an object off the data stack and push its number of elements onto the data stack.
+** `select`: Pop an object and an integer _N_ off the data stack.  Push the element of the object indexed by _N_ onto the data stack.
+* Be creative.
+
+### Using Slices to Reduce Allocations
+
+The simple implementation of ``Prog``'s `eval` method described above can lead
+to significant allocations due to the duplication of command sequences.
+
+----
+$ cargo -q run -- -s ./assets/62_fib.bir
+1346269
+
+allocated   :    2412541376 bytes
+reallocated :         19660 bytes
+exec time   : 15.1793878540 seconds
+$ cargo -q run -- -s ./assets/82_tak.bir
+9
+
+allocated   :    4388333996 bytes
+reallocated :         30412 bytes
+exec time   : 19.1312503540 seconds
+----
+
+Three observations can be used to greatly reduce the allocations.
+
+The first observation is that every command sequence on the data stack was
+either pushed by a ``[ ... ]`` command or duplicated from an existing command
+sequence on the data stack.  Thus, every command sequence on the data stack
+corresponds to some (possibly nested) ``[ ... ]`` command from the Birch
+program.  For example, here is the `62_fib.bir` program:
+
+----
+15 rev [ 0 dup 1 lt [ 0 dup 1 swap sub -1 dup exec swap 2 swap sub -1 dup exec add ] swap [ pop 1 ] swap ifz exec ] rev -1 dup exec
+----
+
+and the data stack at step 285 of the execution:
+
+----
+dstk: [ pop 1 ] 0 [ 0 dup 1 swap sub -1 dup exec swap 2 swap sub -1 dup exec add ] 0 1 3 4 5 6 7 8 9 10 11 12 13 14 15 [ 0 dup 1 lt [ 0 dup 1 swap sub -1 dup exec swap 2 swap sub -1 dup exec add ] swap [ pop 1 ] swap ifz exec ]
+----
+
+Note that each of the three command sequences in the data stack corresponds to
+some ``[ ... ]`` command from the `62_fib.bir` program.
+
+Rather than storing an *owned* `Vec<Command>` on the data stack (via the
+`DataElem::Cmds` variant), it suffices to store a *reference* to the command
+sequence as a `&Vec<Command>`.  In fact, it is even simpler to use a
+`&[Command]`:
+
+[source, rust]
+----
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DataElem<'a> {
+    Num(i64),
+    Cmds(&'a [Command]),
+}
+#[derive(Debug)]
+struct DataStack<'a>(Vec<DataElem<'a>>);
+----
+
+The second observation is that the command stack is always comprised of commands
+that occur in the Birch program.
+
+Rather than representing the command stack as a `Vec<Command>`, a vector of
+commands *owned* by the vector, it suffices to represent the command stack as a
+`Vec<&Command>`, a vector of *references* to commands in the Birch program:
+
+[source, rust]
+----
+#[derive(Debug)]
+struct CmdStack<'a>(Vec<&'a Command>);
+----
+
+An implementation of ``Prog``'s `eval` method using these two observations leads
+to massively reduced allocations (and a reduction in execution time):
+
+----
+$ cargo -q run -- -s ./assets/62_fib.bir
+1346269
+
+allocated   :         14528 bytes
+reallocated :          7084 bytes
+exec time   :  8.6662275640 seconds
+$ cargo -q run -- -s ./assets/82_tak.bir
+9
+
+allocated   :         19564 bytes
+reallocated :         12204 bytes
+exec time   :  9.3304388760 seconds
+----
+
+(Because command sequences are moved from the command stack to the data stack
+and from the data stack to the command stack, it is not possible to implement
+``Prog``'s `eval` method using only one of these two observations.  Also, it may
+be necessary to write explicit lifetimes in `CmdStack` methods, because the
+https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html#lifetime-elision[_lifetime
+elision_] rules force distinct lifetimes to be conflated.)
+
+The third, more subtle, observation is that the command stack can always be
+partititioned into _command sequences_, each of which occurs in the Birch
+program.  For example, here is the `62_fib.bir` program:
+
+----
+15 rev [ 0 dup 1 lt [ 0 dup 1 swap sub -1 dup exec swap 2 swap sub -1 dup exec add ] swap [ pop 1 ] swap ifz exec ] rev -1 dup exec
+----
+
+and the partitioning of the command stack at step 285 of the execution:
+
+----
+cstk: swap ifz exec | add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add | swap 2 swap sub -1 dup exec add
+----
+
+Note that each of the 15 command sequences in the partitioning of the command
+stack occurs in the `62_fib.bir` program.
+
+Rather than representing the command stack as a `Vec<Command>`, a vector of
+commands *owned* by the vector, or as a `Vec<&Command>`, a vector of
+*references* to commands in the Birch program, it suffices to represent the
+command stack as a `Vec<&[Command]>`, a vector of *slices* in the Birch program:
+
+[source, rust]
+----
+#[derive(Debug)]
+struct CmdStack<'a>(Vec<&'a [Command]>);
+----
+
+An implementation of ``Prog``'s `eval` method using the first observation and
+this third observation leads to a (very) small additional reduction in
+allocations (and execution time):
+
+----
+$ cargo -q run -- -s ./assets/62_fib.bir
+1346269
+
+allocated   :         12992 bytes
+reallocated :          5564 bytes
+exec time   :  7.8699879320 seconds
+$ cargo -q run -- -s ./assets/82_tak.bir
+9
+
+allocated   :         15980 bytes
+reallocated :          8636 bytes
+exec time   :  7.3389632700 seconds
+----
+
+(However, this implementation does not require any explicit lifetime
+annotations.)
+
+The difference between `struct CmdStack<'a>(Vec<&'a Command>);` and `struct
+CmdStack<'a>(Vec<&'a [Command]>);` is that the former is a sequence of
+references, where each element is 8 bytes (a 64-bit pointer), and the latter is
+a sequence of slices, where each element is 16 bytes (a 64-bit pointer and a
+64-bit length).
+
+### Using Closures
+
+After learning about
+https://doc.rust-lang.org/book/ch13-01-closures.html[_closures_], try to
+minimize any remaining code duplication in the implementation of ``Prog``'s
+`eval` method.
+
+[bibliography]
+== Bibliography
+
+[[DCPL]] Franklyn Turbak and David Gifford with Mark A. Sheldon. Design Concepts in Programming Languages. The MIT Press, Cambridge, MA, 2008.
