@@ -10,7 +10,7 @@ Java Virtual Machine.  The goal is to gain experience working with `struct`-s,
 ## Sources and Submission
 
 :duetime: 11:59pm
-:dueday: Friday, January 29, 2022
+:dueday: Friday, January 28, 2022
 
 Sources for Programming Assignment&nbsp;02 have been (or will shortly be)
 committed to your repository in the `prog02` sub-directory.  If you cloned your
