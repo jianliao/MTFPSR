@@ -7309,3 +7309,21 @@ fn test_exec_72_tailfib() {
 fn test_exec_72_tailfib_res() -> Result<i64, ProgExecError> {
     Ok(7540113804746346429)
 }
+
+#[test]
+fn test_parse_15_cmds_cmd_10() {
+    let src = fs::read_to_string("./assets/15_cmds_cmd_10.bir").unwrap();
+    assert_eq!(src.parse(), test_parse_15_cmds_cmd_10_res())
+}
+fn test_parse_15_cmds_cmd_10_res() -> Result<Prog, ProgParseError> {
+    Err(ProgParseError)
+}
+
+#[test]
+fn test_parse_15_cmds_cmd_11() {
+    let src = fs::read_to_string("./assets/15_cmds_cmd_11.bir").unwrap();
+    assert_eq!(src.parse(), test_parse_15_cmds_cmd_11_res())
+}
+fn test_parse_15_cmds_cmd_11_res() -> Result<Prog, ProgParseError> {
+    Err(ProgParseError)
+}
