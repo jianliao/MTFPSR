@@ -31,7 +31,7 @@ impl Display for Command {
             Command::Mul => f.write_str("mul"),
             Command::Div => f.write_str("div"),
             Command::Rem => f.write_str("rem"),
-            Command::Eq => f.write_str("gt"),
+            Command::Eq => f.write_str("eq"),
             Command::Lt => f.write_str("lt"),
             Command::Gt => f.write_str("gt"),
             Command::Ifz => f.write_str("ifz"),
