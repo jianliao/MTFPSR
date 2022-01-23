@@ -684,13 +684,13 @@ programming language.  The public types of this crate are:
 * `struct Prog(Command<Vec>);`, a
   https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types[_tuple
   struct_] wrapping a `Vec<Command>` representing a Birch program as a sequence
-  of commands, where `enum Command { Num(i64), Add, ..., Rev,
-  Cmds(Vec<Command>), Exec };` represents Birch commands.  Note that the first
-  command of a program `prog` is at the top of the stack represented by the
-  vector `prog.0` and the last command of the program is at the bottom of the
-  stack; that is, the first command of the program is at index `prog.0.len() -
-  1` and the last command of the program is index `0`.  ``Prog``'s
-  implementation of the
+  of commands, where
+  `enum Command { Num(i64), Add, ..., Rev, Cmds(Vec<Command>), Exec };`
+  represents Birch commands.  Note that the first command of a program `prog` is
+  at the top of the stack represented by the vector `prog.0` and the last
+  command of the program is at the bottom of the stack; that is, the first
+  command of the program is at index `prog.0.len() - 1` and the last command of
+  the program is index `0`.  ``Prog``'s implementation of the
   https://doc.rust-lang.org/std/fmt/trait.Display.html[`Display` trait] shows a
   program according to the syntax described above; that is, the first command is
   shown to the left and the last command is shown to the right.
@@ -717,11 +717,11 @@ https://doc.rust-lang.org/std/str/trait.FromStr.html#tymethod.from_str[`from_str
 method is often used implicitly, through
 https://doc.rust-lang.org/std/primitive.str.html[`str`]'s
 https://doc.rust-lang.org/std/primitive.str.html#method.parse[`parse`] method.)
-Upon a successful parse, ``Prog``'s `from_str` method will return `Ok(Prog
-{...})`.  On any parse error (unrecognized command or mismatched `[`/`]`),
-``Prog``'s `from_str` associated function will return `Err(ProgParseError)`.
-(In a more robust implementation, the `ProgParseError` type would carry
-additional information about the nature of the parse error.)
+Upon a successful parse, ``Prog``'s `from_str` method will return
+`Ok(Prog {...})`.  On any parse error (unrecognized command or mismatched
+`[`/`]`), ``Prog``'s `from_str` associated function will return
+`Err(ProgParseError)`.  (In a more robust implementation, the `ProgParseError`
+type would carry additional information about the nature of the parse error.)
 
 [source, rust]
 ----
@@ -1257,8 +1257,8 @@ exec time   :  7.3389632700 seconds
 (However, this implementation does not require any explicit lifetime
 annotations.)
 
-The difference between `struct CmdStack<'a>(Vec<&'a Command>);` and `struct
-CmdStack<'a>(Vec<&'a [Command]>);` is that the former is a sequence of
+The difference between `struct CmdStack<'a>(Vec<&'a Command>);` and
+`struct CmdStack<'a>(Vec<&'a [Command]>);` is that the former is a sequence of
 references, where each element is 8 bytes (a 64-bit pointer), and the latter is
 a sequence of slices, where each element is 16 bytes (a 64-bit pointer and a
 64-bit length).
