@@ -1,0 +1,12 @@
+[package]
+name = "jumpin"
+version = "0.1.0"
+authors = ["Matthew Fluet <matthew.fluet@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+default-run = "jumpin"
+
+[dependencies]
+puzzle = { path = "../puzzle" }

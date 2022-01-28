@@ -1,0 +1,781 @@
+# Programming Assignment 03
+
+:duetime: 11:59pm
+:duedayA: Friday, February 4, 2022
+:duedayB: Friday, February 11, 2022
+
+In this programming assignment, you will implement a puzzle solver that is
+parameterized by a puzzle trait and then use that trait and solver to solve
+https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] and
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzles.  The goal is to gain experience working with `struct`-s
+and `enum`-s, `trait`-s, and managing object ownership.
+
+**Note:** This is a two part assignment.  Part A is due {duedayA} and is
+comprised of activities in the `puzzle` and `jumpin` library crates; Part B is
+due {duedayB} and is comprised of activities in the `iotcs` library crate.
+After {duedayA}, a solution to Part A will be made available, which can be used
+to complete Part B.
+
+## Sources and Submission
+
+We have setup a Git repository for each student on `git.cs.rit.edu`.  To _clone_
+your repository, run either the command:
+
+  git clone https://git.cs.rit.edu/psr2205/<ritid>psr.git
+
+or, if you have setup SSH keys on `git.cs.rit.edu`, the command:
+
+  git clone gitlab@git.cs.rit.edu:psr2205/<ritid>psr.git
+
+If prompted for a password, then use your `__ritid__@cs.rit.edu` password.
+
+Upon a successful clone, a directory called `__ritid__psr` will be created in
+the current directory.  Over the course of the semester, programming assignments
+will be stored as sub-directories within the `__ritid__psr` directory.
+
+Next, _configure_ your local clone to _merge_ (and to not _rebase_) changes from
+the _origin_ (a.k.a., upstream) repository on `git.cs.rit.edu`:
+
+  git config pull.rebase false
+
+Sources for Programming Assignment&nbsp;03 have been (or will shortly be)
+committed to your repository in the `prog03` sub-directory.  If you cloned your
+repository before the Programming Assignment&nbsp;03 sources have been
+committed, then you will need to _pull_ the upstream changes into your local
+clone, by running the command:
+
+  git pull origin
+
+from the `__ritid__psr` directory.  It is best to _pull_ with no uncommitted
+changes in your local clone, but most commits made to the upstream repository
+will only add a new top-level directory and there should be no merge conflicts.
+
+We will tag programming assignments in the Git repositories at {duetime} on
+{duedayA} and {duedayB}; make sure that you have _committed_ and _pushed_ your
+final version before that time.  To do so, run the commands:
+
+  git commit -a
+  git push origin main
+
+from the `__ritid__psr` directory.  If old programming assignment comments or
+new programming assignment sources have been committed to your repository since
+you last pulled, then you will receive an error message when trying to push:
+
+  error: failed to push some refs to 'git.cs.rit.edu:psr2205/<ritid>psr.git'
+  hint: Updates were rejected because the remote contains work that you do
+  hint: not have locally. This is usually caused by another repository pushing
+  hint: to the same ref. You may want to first integrate the remote changes
+  hint: (e.g., 'git pull ...') before pushing again.
+  hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+To proceed, you will need to _pull_ the upstream changes into your local clone
+and then _push_ your local changes upstream, by running the commands:
+
+  git pull origin
+  git push origin main
+
+from the `__ritid__psr` directory.
+
+## Organization
+
+This project is organized as a workspace containing four crates:
+
+* link:./puzzle[`puzzle`] (library crate): Defines the `Puzzle` trait and the `check` and `solve` functions
+* link:./wgc-river[`wgc-river`] (binary crate): Solves the https://en.wikipedia.org/wiki/Wolf,_goat_and_cabbage_problem[Wolf, Goat, and Cabbage River Puzzle]; uses the `puzzle` crate
+* link:./jumpin[`jumpin`] (library and binary crates): Solves https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzles; uses the `puzzle` crate
+* link:./iotcs[`iotcs`] (library and binary crates): Solves https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the Cow Snatchers] puzzles; uses the `puzzle` crate
+
+## `puzzle` (library crate)
+
+### `Puzzle` Trait
+
+The `Puzzle` trait is an interface to a generic puzzle solver that will use
+breadth-first search (BFS) with hashing of states.
+
+[source,rust]
+----
+pub trait Puzzle {
+    type Move;
+    fn is_goal(&self) -> bool;
+    fn next(&self) -> Vec<(Self::Move, Self)>;
+}
+----
+
+A type that implements the `Puzzle` trait represents a puzzle state (i.e., a
+particular configuration of elements of the puzzle).  The `Move` type represents
+the moves that are specific to this puzzle.  The `is_goal` method determines
+whether or not the puzzle state represents a solved puzzle.  The `next` method
+enumerates all of the (legal) successor puzzle states of the current puzzle
+state, along with the move that leads to that successor puzzle state.
+
+### `check` function
+
+The (provided) `check` function verifies that a sequence of moves solves a puzzle.
+
+[source,rust]
+----
+pub fn check<P>(p0: P, ms: &[P::Move]) -> Option<P>
+where
+    P: Puzzle,
+    P::Move: Eq,
+----
+
+Returns `Some(p)`, if `p` is the goal puzzle state reached from `p0` by the
+moves `ms`.
+
+Returns `None`, if either the sequence of moves `ms` starting from `p0` is not
+legal or if the puzzle state reached from `p0` by the moves `ms` is not a goal
+state.
+
+### `solve` function
+
+**Complete the `solve` function.** (Part A activity)
+
+The `solve` function solves a puzzle using BFS with hashing of states.
+
+[source,rust]
+----
+pub fn solve<P>(p0: P) -> Option<(Vec<P::Move>, P)>
+where
+    P: Puzzle + Eq + Hash + Clone,
+    P::Move: Clone,
+----
+
+The `solve` function returns `+Some((ms,p))+` if puzzle `p0` can be solved by
+the sequence of moves `ms` to a goal state `p`.  The sequence of moves `ms`
+should be one of the shortest sequence of moves from `p0` to a goal state; that
+is, for any sequence of moves `ns` from `p0` to a goal state,
+`+ms.len() <= ns.len()+`.  Note that there may not be a unique goal state for a
+puzzle; therefore, the goal state `p` reached by the sequence of moves `ms` is
+returned.
+
+Returns `None` if `p0` cannot be solved by any sequence of moves.
+
+A BFS is used to find the shortest sequence of moves from `p0` to a goal state.
+A hash set or hash table is used to avoid redundant puzzle states (e.g.,
+different sequences of moves may lead to the same puzzle state).
+
+The generic type parameter `P` must implement `Puzzle` (because it represents a
+puzzle state), `Eq` and `Hash` (in order to for puzzle states to serve as
+hash-set or hash-table keys), and `Clone` (in order for puzzle states to be
+placed in both the hash set or hash table and the BFS queue).
+
+Pseudo-code for a simplifed `solve` function (which only returns a boolean
+indicating whether or not the puzzle is solvable) is as follows:
+
+[source]
+----
+function solve(p0) {
+  visited = new HashSet();
+  todo = new Queue();
+  visited.insert(p0);
+  todo.enqueue(p0);
+  while ! todo.is_empty() {
+    p = todo.dequeue();
+    if p.is_goal() {
+      return true;
+    }
+    for (m,q) in p.next() {
+      if ! (visited.contains(q)) {
+        visited.insert(q);
+        todo.enqueue(q);
+      }
+    }
+  }
+  return false;
+}
+----
+
+Relative to the above pseudo-code, the `puzzle::solve` function must be able to
+determine the (minimal) sequence of moves that leads to each state.  Also, in
+Rust, ownership of puzzle states and moves must be properly handled.
+
+#### Discussion/Hints
+
+The Rust standard library provides both
+https://doc.rust-lang.org/std/collections/struct.HashSet.html[`std::collections::HashSet`]
+and
+https://doc.rust-lang.org/std/collections/struct.HashMap.html[`std::collections::HashMap`].
+The former suffices if one only needs to represent a set of puzzle states, but
+for some implementations of `solve`, one may want to associate some information
+with each puzzle state, in which case the latter is recommended.  Recall that it
+is more efficient to use the
+https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.entry[`entry`]
+method of
+https://doc.rust-lang.org/std/collections/struct.HashMap.html[`std::collections::HashMap`]
+than to use a
+https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.get[`get`]
+followed by
+https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.insert[`insert`].
+
+Note that it is required that the keys of a
+https://doc.rust-lang.org/std/collections/struct.HashSet.html[`std::collections::HashSet`]
+or
+https://doc.rust-lang.org/std/collections/struct.HashMap.html[`std::collections::HashMap`]
+implement the https://doc.rust-lang.org/std/cmp/trait.Eq.html[`std::cmp::Eq`]
+and https://doc.rust-lang.org/std/hash/trait.Hash.html[`std::hash::Hash`]
+traits, although this can frequently be achieved by using
+`+#[derive(PartialEq, Eq, Hash)]+`.
+
+The Rust standard library provides
+https://doc.rust-lang.org/std/collections/struct.VecDeque.html[`std::collections::VecDeque`],
+which can be used as both a queue and a deque (double-ended queue).
+
+#### Challenges
+
+The following are neither submission requirements nor extra credit work.  They
+are simply opportunities to challenge your understanding of and skills with
+Rust.
+
+The `solve` function assumes that the generic type parameter `P` implements
+`Puzzle` (because it represents a puzzle state), `Eq` and `Hash` (in order to
+for puzzle states to serve as hash-set or hash-table keys), and `Clone` (in
+order for puzzle states to be placed in both the hash set or hash table and the
+BFS queue).  The `Clone` trait bound, however, is unfortunate, especially if
+puzzle states are "large" and expensive to copy.  (Of course, if puzzle states
+are "large" and expensive to copy, then it is probably prohibitive to keep track
+of all puzzle states that have been visited.)  Can the `Clone` trait bound be
+eliminated, while maintaining an efficient solver?  Some thoughts:
+
+* One could only place puzzle states in the hash table, mapping each puzzle
+  state to an index number and then place the index number into the BFS queue.
+  However, one would require a linear search of the hash table to map from an
+  index number to the puzzle state when popping an index number from the BFS
+  queue.
+
+* Instead of using a hash set or hash table to track the puzzle states that have
+  been visited, one could use a simple `Vec`, which implicitly maps each puzzle
+  state to an index and then place the index number into the BFS queue.
+  However, one require a linear search of the `Vec` to determine whether or not
+  a newly generated puzzle state had already been visited.
+
+* Instead of placing puzzle states into both the hash set or hash table and the
+  BFS queue, it would be nice to only place _references_ to puzzle states into
+  the hash set or hash table and the BFS queue.  However, this requires moving
+  puzzle states into some data structure with a lifetime that lives throughout
+  the execution of the `solve` function.  Moreover, it must be possible to move
+  the final goal puzzle state out of the data structure in order to be returned
+  as a component of the result.
+
+Later in the course, we will see some mechanisms by which the `Clone` trait
+bound can be eliminated (for example, using a reference-counting pointer).
+
+For simplicity, the `solve` function assumes that the `P::Move` type (i.e., the
+type of puzzle moves) implements `Clone`.  However, there is an implementation
+of `solve` that does not require this trait bound (at the expense of performing
+additional copies of puzzle states).
+
+## `wgc-river` (binary crate)
+
+The `wgc-river` binary crate uses the `puzzle` library crate to solve the
+https://en.wikipedia.org/wiki/Wolf,_goat_and_cabbage_problem[Wolf, Goat, and
+Cabbage River Puzzle].  This program serves as a simple test of the `puzzle`
+library crate.
+
+### Example
+
+----
+$ cargo -q run --bin wgc-river
+solution:
+cross to west bank with goat
+cross to east bank with nothing
+cross to west bank with wolf
+cross to east bank with goat
+cross to west bank with cabbage
+cross to east bank with nothing
+cross to west bank with goat
+----
+
+It is possible (though unlikely) that a correct implementation of
+`puzzle::solve` could return a different 7 move solution (where the moves of the
+`wolf` and the `cabbage` are swapped).
+
+## `jumpin` (library and binary crates)
+
+The `jumpin` library and binary crates uses the `puzzle` library crate to solve
+https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzles.  The
+essence of the puzzles is to help rabbits jump around a forest to the safety of
+their holes.  Watch the https://youtu.be/8sEoYzcmOfc[video], play it
+https://www.smartgames.eu/uk/try-smartgames-online/one-player-games/jumpin[online],
+and read the game rules at the bottom of the
+https://www.smartgamesandpuzzles.com/jump-in.html[designer's commentary] to
+understand the rules of the puzzle.
+
+### Input Format
+
+https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzles are
+provided in a simple text format.  A valid input will always consist of exactly
+5 lines of 6 characters each (5 printable characters and a single newline
+character).  The 25 non-newline characters to the 25 grid locations that may
+contain a hole, a rabbit, a mushroom, or a fox.
+
+Objects are represented by single characters:
+
+* `H`: hole
+* `W`: white rabbit
+* `B`: brown rabbit
+* `G`: grey rabbit
+* `M`: mushroom
+* `F`: first fox head
+* `X`: first fox tail
+* `V`: second fox head ("fox" in Dutch is "vos")
+* `S`: second fox tail
+
+For example, the input text format for the Junior 20 challenge shown in the
+https://youtu.be/8sEoYzcmOfc[video] is as follows:
+
+----
+HX GH
+ F M 
+  H B
+   SV
+HWM H
+----
+
+Note that some challenges place a rabbit or mushroom in a hole, in which case
+only the `W`, `B`, `G`, or `M` character appears in that position.
+
+### Implementation Overview
+
+We model https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzles
+using four main types (`enum Object`, `struct Pos`, `struct JumpIN`, and
+`enum Direction`).
+
+#### `Object` type
+
+The `Object` type represents objects that may be placed (and moved) on the
+gameboard.
+
+[source, rust]
+----
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Object {
+    WhiteRabbit,
+    BrownRabbit,
+    GreyRabbit,
+    Mushroom,
+    Fox1Head,
+    Fox1Tail,
+    Fox2Head,
+    Fox2Tail,
+}
+----
+
+Note that there is no `Hole` variant, as the holes are always at fixed positions
+on the gameboard.
+
+#### `Pos` type
+
+The `Pos` type represents a position on the gameboard.  The North-West corner of
+the gameboard is `Pos {x: 0, y: 0}`, the North-East corner of the gameboard `Pos
+{x: 4, y: 0}`, the South-West corner of the gameboard is
+`Pos {x: 0, y: 4}`, and the South-East corner of the gameboard is
+`Pos {x: 4, y: 4}`.
+
+[source, rust]
+----
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct Pos {
+    x: usize,
+    y: usize,
+}
+----
+
+The (private) `pos` module ensures that the `Pos` type can only be created via
+the `new` associated function and accessed via the `x`, `y`, and `xy` methods.
+
+#### `Direction` type
+
+The `Direction` type represents the cardinal directions, in which objects may be
+moved on the gameboard.
+
+[source, rust]
+----
+pub enum Direction { North, South, West, East, }
+----
+
+#### `JumpIN` type
+
+The `JumpIN` type represents a
+https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzle state: a
+gameboard with placed objects.
+
+[source, rust]
+----
+pub struct JumpIN([[Option<Object>; 5]; 5]);
+----
+
+The (private) `jumpin` module ensures that the `JumpIN` type can only be created
+via the `new` associated function and accessed via the `get` and `get_mut`
+methods.
+
+#### `Puzzle` implementation for `JumpIN` type
+
+The `JumpIN` type implements the `Puzzle` trait by providing
+implementations of the `is_goal` and `next` methods.
+
+[source, rust]
+----
+impl Puzzle for JumpIN {
+    type Move = (Object,Direction);
+
+    fn is_goal(&self) -> bool { ... }
+    fn next(&self) -> Vec<(Self::Move, Self)> { ... }
+}
+----
+
+The (provided) `is_goal` method determines whether or not the puzzle state
+represents a solved puzzle.  For
+https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzles, this
+means that all rabbits are in holes.
+
+The (provided) `next` method enumerates all of the (legal) successor puzzle
+states of the current puzzle state, along with the move that leads to that
+successor puzzle state.  For
+https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzles, this
+means that a rabbit jumps over at least one obstacle and into the first empty
+space, no rabbit moves off the side of the forest, that no fox moves into
+another object or off the side of the forest.  The `next` method works by
+iterating over all positions and all directions; for each position and
+direction, it tries to move a rabbit at that position in that direction and
+tries to move a fox at that position in that direction.
+
+#### ``JumpIN``'s `move_rabbit` and `move_fox` methods
+
+**Complete the `move_rabbit` and `move_fox` methods for `JumpIN`.** (Part A activity)
+
+`gb.move_rabbit(pos, dir`) attempts to move a rabbit at position `pos` in the
+direction `dir`; if successful, return the rabbit object that was moved and the
+new gameboard (`JumpIN` puzzle state).  This method implements the game rules
+with respect to rabbits.  Check that there is a rabbit
+at position `pos`, that the next position in the direction `dir` is an obstacle
+(a rabbit must jump over at least one obstacle), and find the position `posd`
+(destination) of the first empty space in the direction `dir`.  If so, then it should copy the current gameboard into a new gameboard,
+update `pos` in the new gameboard to `None` and update `posd` in the new
+gameboard to `Some`.
+
+`gb.move_fox(pos, dir`) attempts to move a fox at position `pos` in the
+direction `dir`; if successful, return the fox head object that was moved and
+the new gameboard (`JumpIN` puzzle state).  This method implements the game
+rules with respect to foxes.  Let `posb` (backward) be the previous position
+in direction `dir` and let `posf` (forward) be the next position in direction
+`dir`.  Check that there are matching fox components at positions `posb` and
+`posf` and that `posf` is an empty space.  If so, then it should copy the
+current gameboard into a new gameboard, update `posf` in the new gameboard to
+`Some` of the object at `pos` in the current gameboard, update `pos` in the new
+gameboard to `Some` of the object at `posb` in the current gameboard, and update
+`posd` in the new gameboard to `None`.  Note that the object returned by the
+`move_fox` method should be a fox head object, which is not necessarily the
+object that is at position `pos` in the current gameboard.
+
+#### `main` function
+
+The (provided) `main` function combines the above into a complete program.  It
+checks that there is a single command-line argument.  That command-line argument
+is interpreted as a file name, which is read into a string.  The string is
+printed out (to facilitate manually checking a solution against the input).
+That string is parsed into a `JumpIN` value.  That `JumpIN` value is passed to
+`puzzle::solve` to be solved.  If no solution is found, then `no solution` is
+printed.  If a solution is found, then the sequence of moves is printed on a
+single line.
+
+##### Examples
+
+----
+$ cargo -q run --bin jumpin jumpin/assets/starter01.txt
+HMM H
+   M 
+  HW 
+     
+H   H
+
+solution:
+W↑←
+
+$ cargo -q run --release -- ./assets/junior20.txt 
+HX GH
+ F M 
+  H B
+   SV
+HWM H
+
+solution:
+G↓F↓↓B←G↓W→F↓G←
+
+$ cargo -q run --bin jumpin jumpin/assets/wizard60.txt
+H  MH
+XF W 
+  M B
+M    
+H  GH
+
+solution:
+F→W←F→→B↑F←←W→B←↓F←B↑→F→W←F→B←F→W→↓F←B→W↑→↓B↓F→B↑←W↑F←B↓F←W←↓G←W↑→B↑F←W←B←↓W↓B→F→W↑B←W↓B→G↑W↑G→W↓B←W↑F→→G↑←W→↓G→↓F←G↑W↑←↓G←F→W↑←F←G→F←W→F←G←↓F→G↑→W←↓F←B↑
+----
+
+### Discussion/Hints
+
+## `iotcs` (library and binary crates)
+
+The `iotcs` library and binary crates uses the `puzzle` library crate to solve
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzles.  The essence of the puzzles is to move a UFO around a
+farm, beaming up cattle and avoiding obstacles.  Watch the
+https://youtu.be/OndefZTAYV8[video] and read the
+https://www.thinkfun.com/wp-content/uploads/2019/04/Invas-1021-Instructions.pdf[instructions
+(pdf)] to understand the rules of the puzzle.  Our implementation will only
+handle the easy to super-hard levels (and will not handle the genius levels with
+crop circles).  Also, we will consider a puzzle to be solved when all cattle
+have been beamed up (with the Red Bull picked up last) and the UFO has moved to
+a side of the farm; that is, a final move off of a side of the farm is not
+required (or allowed).
+
+### Input Format
+
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzles are provided in a simple text format.  The basic template
+is as follows:
+
+----
+ | | | 
+-+-+-+-
+ | | | 
+-+-+-+-
+ | | | 
+-+-+-+-
+ | | | 
+----
+
+The space characters correspond to the 16 grid locations that may contain a cow
+or the bull, the silo, or the UFO.  The `|` and `-` characters correspond to the
+24 boundaries between grid locations that may contain a wall.  The `+`
+characters correspond to the 9 corners between grid locations (which will never
+contain any object).  A valid input will always consist of exactly 7 lines of 8
+characters each (7 printable characters and a single newline character).
+
+Objects are represented by single characters that replace either a space, `|`,
+or `-` character in the above template:
+
+* `U`: UFO
+* `A`: azure (blue) cow
+* `Y`: yellow cow
+* `P`: purple cow
+* `O`: orange cow
+* `R`: red bull
+* `B`: barn (red wall)
+* `C`: crop row (green wall)
+* `H`: hay bale (yellow wall)
+* `F`: fences (white wall)
+* `S`: silo
+
+For example, the input text format for the Easy 00 challenge card on page 6 of the
+https://www.thinkfun.com/wp-content/uploads/2019/04/Invas-1021-Instructions.pdf[instructions] is as follows:
+
+----
+A| CPB 
+-+-+-+-
+ |S| BU
+F+-+-+-
+Y| BO|R
+H+H+-+-
+ | | | 
+----
+
+### Implementation Overview
+
+You will model
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzles using three main types (`struct Farm`, `struct
+IotCS<'a>`, and `enum Direction`) that are defined, but incomplete, in the
+initial sources.  In addition, you will want to define additional types to
+represent other elements, such as cattle, walls, the silo, the UFO, and grid
+positions.
+
+#### `Farm` type
+
+**Add fields to complete the implementation of the `Farm` type and complete the
+`from_str` associated function for ``Farm``'s implementation of the `FromStr`
+trait.** (Part B activity)
+
+The `Farm` type will represent the initial and fixed elements of an
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzle: the initial positions of the UFO and the cattle and the
+fixed positions of the walls and the silo.  The `Farm` type will implement the
+https://doc.rust-lang.org/std/str/trait.FromStr.html[`FromStr` trait] to parse a
+`Farm` value from a string, according to the input format described above.
+(Note that ``FromStr``'s
+https://doc.rust-lang.org/std/str/trait.FromStr.html#tymethod.from_str[`from_str`]
+method is often used implicitly, through
+https://doc.rust-lang.org/std/primitive.str.html[`str`]'s
+https://doc.rust-lang.org/std/primitive.str.html#method.parse[`parse`] method.)
+Upon a successful parse, ``Farm``'s `from_str` method will return
+`Ok(Farm {...})`.  On any parse error (e.g., too few characters, too many
+characters, unrecognized character, unexpected template or object character,
+missing red bull, duplicate cattle, missing or duplicate ufo, duplicate silo),
+``Farm``'s `from_str` associated function will return `Err(FarmParseError)`.
+(In a more robust implementation, the `FarmParseError` type would carry
+additional information about the nature of the parse error.)
+
+[source, rust]
+----
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct Farm { ... }
+
+#[derive(Debug)]
+pub struct FarmParseError;
+impl FromStr for Farm {
+    type Err = FarmParseError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> { ... }
+}
+----
+
+#### `Direction` type
+
+The `Direction` type represents the cardinal directions, in which the UFO may be
+moved.
+
+[source, rust]
+----
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum Direction { North, South, West, East, }
+impl Display for Direction { ... /* provided */ ...}
+----
+
+#### `IotCS` type
+
+**Add fields to complete the implementation of the `IotCS` type, complete
+the `new` associated function, and complete the `ufo_with_cattle_to_string`
+method.** (Part B activity)
+
+The `IotCS` type will represent an
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzle state: a _reference_ to a `Farm` value (providing
+information about the initial positions of the cattle and the fixed positions of
+the walls and the silo) and the current status of the UFO (position and
+collection of beamed-up cattle).  Because the `IotCS` type will implement
+`Clone`, it is important that the `IotCS` type contain a _reference_ to a `Farm`
+value rather than an owned `Farm` value; the former is simply a pointer that
+implements `Copy` and may therefore be efficiently cloned, while the latter
+would require a deep copy to be cloned.
+
+[source, rust]
+----
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IotCS<'a> {farm: &'a Farm, ...}
+impl<'a> IotCS<'a> {
+    pub fn new(farm: &'a Farm) -> Self { ... }
+    pub fn ufo_with_cattle_to_string(&self) -> String { ... }
+}
+----
+
+The `new` associated function of the `IotCS` type takes a `Farm` reference and
+returns a `IotCS` value that represents the initial puzzle state.
+
+The `ufo_with_cattle_to_string` method returns a string representation of the
+UFO and the cattle stack order.  The result `String` should begin with `U:` and
+proceed with the characters for the cattle in the order in which they were
+beamed up.  For example, the `ufo_with_cattle_to_string` method on an `IotCS`
+value representing a goal state for the Easy 00 challenge card on page 6 of the
+https://www.thinkfun.com/wp-content/uploads/2019/04/Invas-1021-Instructions.pdf[instructions]
+should return `U:PAYOR` (i.e., the purple cow beamed-up first, then the azure
+(blue) cow, then the yellow cow, then the orange cow, and lastly the red bull).
+
+#### `Puzzle` implementation for `IotCS` type
+
+**Complete the `is_goal` and `next` methods for ``IotCS``'s implementation of
+the `Puzzle` trait.** (Part B activity)
+
+The `IotCS` type implements the `Puzzle` trait by providing implementations of
+the `is_goal` and `next` methods.
+
+[source, rust]
+----
+impl<'a> Puzzle for IotCS<'a> {
+    type Move = Direction;
+
+    fn is_goal(&self) -> bool { ... }
+    fn next(&self) -> Vec<(Self::Move, Self)> { ... }
+}
+----
+
+The `is_goal` method determines whether or not the puzzle state represents a
+solved puzzle.  For
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzles, this means that all cattle from the farm have been
+beamed up (with the red bull picked up last) and the UFO has moved to a side of
+the farm.
+
+The `next` method enumerates all of the (legal) successor puzzle states of the
+current puzzle state, along with the move that leads to that successor puzzle
+state.  For
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzles, this means that the UFO does not move over the silo,
+that the UFO does not move over a wall with too many cattle, that the UFO does
+not move off of a side of the farm.
+
+#### `main` function
+
+The (provided) `main` function combines the above into a complete program.  It
+checks that there is a single command-line argument.  That command-line argument
+is interpreted as a file name, which is read into a string.  That string is
+parsed into a `Farm` value.  The string is also printed out (to facilitate
+manually checking a solution against the input).  An initial `IotCS` value is
+constructed from a reference to the parsed `Farm` value.  That `IotCS` value is
+passed to `puzzle::solve` to be solved.  If no solution is found, then `no
+solution` is printed.  If a solution is found, then the sequence of moves is
+printed on a single line followed by the result of the
+`ufo_with_cattle_to_string` method on the goal state.
+
+##### Examples
+
+----
+$ cargo -q run --bin iotcs iotcs/assets/easy00.txt
+A| CPB 
+-+-+-+-
+ |S| BU
+F+-+-+-
+Y| BO|R
+H+H+-+-
+ | | | 
+
+solution:
+↑←←←↓↓→↓→↑→
+U:PAYOR
+
+$ cargo -q run --bin iotcs iotcs/assets/superhard31.txt
+ | |PBY
+-+C+-+F
+ B | HA
+-+F+F+-
+UBO| | 
+-+-+-+-
+R|S| | 
+
+solution:
+↑→→→↑↓↓←←→→↑←↑←←↓↓↓
+U:AYOPR
+----
+
+### Discussion/Hints
+
+You can, and should, define additional types to represent other elements of
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzles, such as cattle, walls, the silo, the UFO, and grid
+positions.
+
+Be sure that your additions to the `IotCS` type does not duplicate information
+that is present in the `Farm` reference.  In particular, the positions of the
+walls and the silo should always be fetched from the `Farm` reference, and never
+copied into a field of the `IotCS` type.
+
+Think about how to best represent walls and their positions.  A 4x4 grid
+suffices to represent the positions that may contain a cow or the bull, the
+silo, or the UFO.  However, walls are placed in between adjacent positions of
+the 4x4 grid.
+
+Note that there may be multiple sequences of moves that solve an
+https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
+Cow Snatchers] puzzle.  However, all sequences of moves that solve a puzzle will
+result in the same cattle stack order (as returned by
+`ufo_with_cattle_to_string`).
