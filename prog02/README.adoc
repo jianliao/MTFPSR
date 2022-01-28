@@ -24,12 +24,12 @@ from the `__ritid__psr` directory.  It is best to _pull_ with no uncommitted
 changes in your local clone, but most commits made to the upstream repository
 will only add a new top-level directory and there should be no merge conflicts.
 
-We will tag homeworks in the Git repositories at {duetime} on {dueday}; make
-sure that you have _committed_ and _pushed_ your final version before that time.
-To do so, run the commands:
+We will tag programming assignments in the Git repositories at {duetime} on
+{dueday}; make sure that you have _committed_ and _pushed_ your final version
+before that time.  To do so, run the commands:
 
   git commit -a
-  git push origin master
+  git push origin main
 
 from the `__ritid__psr` directory.  If old programming assignment comments or
 new programming assignment sources have been committed to your repository since
@@ -46,7 +46,7 @@ To proceed, you will need to _pull_ the upstream changes into your local clone
 and then _push_ your local changes upstream, by running the commands:
 
   git pull origin
-  git push origin master
+  git push origin main
 
 from the `__ritid__psr` directory.
 
