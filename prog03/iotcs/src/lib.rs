@@ -2,6 +2,8 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use serde::{Deserialize, Serialize};
+
 use puzzle::Puzzle;
 
 /// The `Farm` type represents the initial and fixed elements of an
@@ -25,12 +27,24 @@ impl FromStr for Farm {
 
 /// The `Direction` type represents the cardinal directions, in which the UFO
 /// may be moved.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Direction {
     North,
     South,
     West,
     East,
+}
+impl Direction {
+    /// An iterator over all directions.
+    fn values() -> impl Iterator<Item = Self> {
+        [
+            Direction::North,
+            Direction::South,
+            Direction::West,
+            Direction::East,
+        ]
+        .into_iter()
+    }
 }
 impl Display for Direction {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {

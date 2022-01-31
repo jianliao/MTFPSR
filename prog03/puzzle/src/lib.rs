@@ -87,3 +87,6 @@ where
     // Your code here
     unimplemented!()
 }
+
+#[allow(clippy::type_complexity)]
+pub mod test;

@@ -2,12 +2,14 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use serde::{Deserialize, Serialize};
+
 use puzzle::Puzzle;
 
 /// The `Object` type represents objects that may be placed (and moved) on the
 /// gameboard.  (Note that there is no `Hole` variant, as the holes are always
 /// at fixed positions on the gameboard.)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Object {
     WhiteRabbit,
     BrownRabbit,
@@ -147,7 +149,7 @@ impl Display for Pos {
 
 /// The `Direction` type represents the cardinal directions, in which objects
 /// may be moved on the gameboard.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Direction {
     North,
     South,
@@ -191,11 +193,12 @@ impl Display for Direction {
 mod jumpin {
     use super::Object;
     use super::Pos;
+    use serde::{Deserialize, Serialize};
 
     /// The `JumpIN` type represents a
     /// https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzle state:
     /// a gameboard with placed objects.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
     pub struct JumpIN([[Option<Object>; 5]; 5]);
     impl JumpIN {
         pub(super) fn new() -> Self {

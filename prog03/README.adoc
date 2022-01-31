@@ -302,6 +302,9 @@ and read the game rules at the bottom of the
 https://www.smartgamesandpuzzles.com/jump-in.html[designer's commentary] to
 understand the rules of the puzzle.
 
+An extensive test suite is provided in the link:./jumpin/src/tests.rs[`tests`
+module], which can be run with `cargo test`.
+
 ### Input Format
 
 https://www.smartgames.eu/uk/one-player-games/jumpin[JumpIN'] puzzles are
@@ -349,7 +352,7 @@ gameboard.
 
 [source, rust]
 ----
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Object {
     WhiteRabbit,
     BrownRabbit,
@@ -392,6 +395,7 @@ moved on the gameboard.
 
 [source, rust]
 ----
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Direction { North, South, West, East, }
 ----
 
@@ -403,6 +407,7 @@ gameboard with placed objects.
 
 [source, rust]
 ----
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct JumpIN([[Option<Object>; 5]; 5]);
 ----
 
@@ -531,6 +536,9 @@ have been beamed up (with the Red Bull picked up last) and the UFO has moved to
 a side of the farm; that is, a final move off of a side of the farm is not
 required (or allowed).
 
+An extensive test suite is provided in the link:./iotcs/src/tests.rs[`tests`
+module], which can be run with `cargo test`.
+
 ### Input Format
 
 https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
@@ -637,7 +645,7 @@ moved.
 
 [source, rust]
 ----
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Direction { North, South, West, East, }
 impl Display for Direction { ... /* provided */ ...}
 ----
