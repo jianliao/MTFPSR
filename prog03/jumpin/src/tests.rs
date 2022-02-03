@@ -26,15 +26,13 @@ fn parse_test(
     let src = fs::read_to_string(format!("./assets/{file_stem}.txt")).unwrap();
     match (src.parse::<JumpIN>(), parse_test_res) {
         (Err(_), Err(_)) => Ok(()),
-        (Err(_), Ok(_)) => Err(String::from(
-            "JumpIN::from_str of {file_stem} should not fail.",
-        )),
-        (Ok(_), Err(_)) => Err(String::from("JumpIN::from_str of {file_stem} should fail.")),
+        (Err(_), Ok(_)) => Err(format!("JumpIN::from_str of {file_stem} should not fail.")),
+        (Ok(_), Err(_)) => Err(format!("JumpIN::from_str of {file_stem} should fail.")),
         (Ok(puzzle), Ok(puzzle_res)) => {
             if puzzle == puzzle_res {
                 Ok(())
             } else {
-                Err(String::from("JumpIN::from_str of {file_stem} succeeded, but does not equal expected JumpIN value."))
+                Err(format!("JumpIN::from_str of {file_stem} succeeded, but does not equal expected JumpIN value."))
             }
         }
     }
@@ -67,7 +65,7 @@ fn moves_test(
         Ok(()) => Ok(()),
         Err((ms, err)) => {
             let s = if ms.is_empty() {
-                String::from("{file_stem}")
+                format!("{file_stem}")
             } else {
                 format!("{file_stem} with moves {}", moves_to_string(&ms))
             };
@@ -87,572 +85,62 @@ fn moves_test(
     }
 }
 
-mod expert25 {
+mod badinput11 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("expert25", parse_res())
+        parse_test("badinput11", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert25.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("expert25", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert25.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("expert25", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 6241
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert25.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
+        Err(JumpINParseError)
     }
 }
-mod expert26 {
+mod badinput13 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("expert26", parse_res())
+        parse_test("badinput13", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert26.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("expert26", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert26.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("expert26", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 1225
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert26.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
+        Err(JumpINParseError)
     }
 }
-mod expert35 {
+mod wizard50 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("expert35", parse_res())
+        parse_test("wizard50", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
         Ok(puzzle())
     }
     fn puzzle() -> JumpIN {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert35.puz.btc.z").unwrap(),
+            fs::File::open("./assets/btc/wizard50.puz.btc.z").unwrap(),
         ))
         .unwrap()
     }
     #[test]
     fn solve() -> Result<(), String> {
-        solve_test("expert35", puzzle(), solve_res())
+        solve_test("wizard50", puzzle(), solve_res())
     }
     fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert35.soln.btc.z").unwrap(),
+            fs::File::open("./assets/btc/wizard50.soln.btc.z").unwrap(),
         ))
         .unwrap()
     }
     #[test]
     fn moves() -> Result<(), String> {
-        moves_test("expert35", &puzzle(), &move_tree())
+        moves_test("wizard50", &puzzle(), &move_tree())
     }
     fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 1586
+        // move_tree.size() = 62905
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert35.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod expert36 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("expert36", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert36.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("expert36", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert36.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("expert36", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 634
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/expert36.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod junior13 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("junior13", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior13.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("junior13", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior13.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("junior13", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 266
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior13.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod junior14 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("junior14", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior14.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("junior14", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior14.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("junior14", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 855
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior14.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod junior23 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("junior23", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior23.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("junior23", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior23.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("junior23", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 2769
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior23.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod junior24 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("junior24", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior24.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("junior24", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior24.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("junior24", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 9553
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/junior24.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod master37 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("master37", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master37.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("master37", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master37.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("master37", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 4956
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master37.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod master38 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("master38", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master38.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("master38", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master38.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("master38", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 5057
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master38.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod master47 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("master47", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master47.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("master47", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master47.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("master47", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 1965
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master47.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod master48 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("master48", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master48.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("master48", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master48.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("master48", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 1605
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/master48.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod starter01 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("starter01", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter01.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("starter01", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter01.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("starter01", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 29
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter01.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod starter02 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("starter02", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter02.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("starter02", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter02.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("starter02", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 783
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter02.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod starter11 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("starter11", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter11.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("starter11", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter11.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("starter11", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 256
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/starter11.mt.btc.z").unwrap(),
+            fs::File::open("./assets/btc/wizard50.mt.btc.z").unwrap(),
         ))
         .unwrap()
     }
@@ -695,78 +183,225 @@ mod starter12 {
         .unwrap()
     }
 }
-mod wizard49 {
+mod badinput07 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("wizard49", parse_res())
+        parse_test("badinput07", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod badinput02 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput02", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod expert26 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("expert26", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
         Ok(puzzle())
     }
     fn puzzle() -> JumpIN {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/wizard49.puz.btc.z").unwrap(),
+            fs::File::open("./assets/btc/expert26.puz.btc.z").unwrap(),
         ))
         .unwrap()
     }
     #[test]
     fn solve() -> Result<(), String> {
-        solve_test("wizard49", puzzle(), solve_res())
+        solve_test("expert26", puzzle(), solve_res())
     }
     fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/wizard49.soln.btc.z").unwrap(),
+            fs::File::open("./assets/btc/expert26.soln.btc.z").unwrap(),
         ))
         .unwrap()
     }
     #[test]
     fn moves() -> Result<(), String> {
-        moves_test("wizard49", &puzzle(), &move_tree())
+        moves_test("expert26", &puzzle(), &move_tree())
     }
     fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 1378
+        // move_tree.size() = 1225
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/wizard49.mt.btc.z").unwrap(),
+            fs::File::open("./assets/btc/expert26.mt.btc.z").unwrap(),
         ))
         .unwrap()
     }
 }
-mod wizard50 {
+mod junior14 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("wizard50", parse_res())
+        parse_test("junior14", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
         Ok(puzzle())
     }
     fn puzzle() -> JumpIN {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/wizard50.puz.btc.z").unwrap(),
+            fs::File::open("./assets/btc/junior14.puz.btc.z").unwrap(),
         ))
         .unwrap()
     }
     #[test]
     fn solve() -> Result<(), String> {
-        solve_test("wizard50", puzzle(), solve_res())
+        solve_test("junior14", puzzle(), solve_res())
     }
     fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/wizard50.soln.btc.z").unwrap(),
+            fs::File::open("./assets/btc/junior14.soln.btc.z").unwrap(),
         ))
         .unwrap()
     }
     #[test]
     fn moves() -> Result<(), String> {
-        moves_test("wizard50", &puzzle(), &move_tree())
+        moves_test("junior14", &puzzle(), &move_tree())
     }
     fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 62905
+        // move_tree.size() = 855
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/wizard50.mt.btc.z").unwrap(),
+            fs::File::open("./assets/btc/junior14.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod master47 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("master47", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master47.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("master47", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master47.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("master47", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 1965
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master47.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod junior13 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("junior13", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior13.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("junior13", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior13.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("junior13", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 266
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior13.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod badinput10 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput10", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod expert36 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("expert36", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert36.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("expert36", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert36.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("expert36", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 634
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert36.mt.btc.z").unwrap(),
         ))
         .unwrap()
     }
@@ -809,132 +444,12 @@ mod trivial01 {
         .unwrap()
     }
 }
-mod trivial02 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("trivial02", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/trivial02.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("trivial02", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/trivial02.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("trivial02", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 44
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/trivial02.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod impossible {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("impossible", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Ok(puzzle())
-    }
-    fn puzzle() -> JumpIN {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/impossible.puz.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("impossible", puzzle(), solve_res())
-    }
-    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/impossible.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("impossible", &puzzle(), &move_tree())
-    }
-    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
-        // move_tree.size() = 3675
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/impossible.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
 mod badinput01 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
         parse_test("badinput01", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput02 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput02", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput03 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput03", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput04 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput04", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput05 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput05", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
         Err(JumpINParseError)
@@ -951,89 +466,61 @@ mod badinput06 {
         Err(JumpINParseError)
     }
 }
-mod badinput07 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput07", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput08 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput08", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput09 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput09", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput10 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput10", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput11 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput11", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput12 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput12", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
-mod badinput13 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput13", parse_res())
-    }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
-    }
-}
 mod badinput14 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
         parse_test("badinput14", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod starter11 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("starter11", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter11.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("starter11", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter11.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("starter11", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 256
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter11.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod badinput04 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput04", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
         Err(JumpINParseError)
@@ -1050,48 +537,80 @@ mod badinput15 {
         Err(JumpINParseError)
     }
 }
-mod badinput16 {
+mod junior24 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("badinput16", parse_res())
+        parse_test("junior24", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior24.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("junior24", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior24.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("junior24", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 9553
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior24.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
     }
 }
-mod badinput17 {
+mod master38 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("badinput17", parse_res())
+        parse_test("master38", parse_res())
     }
     fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
+        Ok(puzzle())
     }
-}
-mod badinput18 {
-    use super::*;
-
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master38.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
     #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput18", parse_res())
+    fn solve() -> Result<(), String> {
+        solve_test("master38", puzzle(), solve_res())
     }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master38.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
     }
-}
-mod badinput19 {
-    use super::*;
-
     #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput19", parse_res())
+    fn moves() -> Result<(), String> {
+        moves_test("master38", &puzzle(), &move_tree())
     }
-    fn parse_res() -> Result<JumpIN, JumpINParseError> {
-        Err(JumpINParseError)
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 5057
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master38.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
     }
 }
 mod wizard59 {
@@ -1132,6 +651,77 @@ mod wizard59 {
         .unwrap()
     }
 }
+mod badinput16 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput16", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod badinput12 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput12", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod expert35 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("expert35", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert35.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("expert35", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert35.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("expert35", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 1586
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert35.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod badinput05 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput05", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
 mod wizard60 {
     use super::*;
 
@@ -1170,6 +760,66 @@ mod wizard60 {
         .unwrap()
     }
 }
+mod badinput09 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput09", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod starter01 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("starter01", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter01.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("starter01", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter01.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("starter01", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 29
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter01.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod badinput19 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput19", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
 mod junior20 {
     use super::*;
 
@@ -1204,6 +854,354 @@ mod junior20 {
         // move_tree.size() = 386625
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/junior20.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod master37 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("master37", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master37.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("master37", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master37.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("master37", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 4956
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master37.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod master48 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("master48", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master48.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("master48", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master48.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("master48", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 1605
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/master48.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod wizard49 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("wizard49", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/wizard49.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("wizard49", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/wizard49.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("wizard49", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 1378
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/wizard49.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod junior23 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("junior23", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior23.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("junior23", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior23.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("junior23", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 2769
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/junior23.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod starter02 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("starter02", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter02.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("starter02", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter02.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("starter02", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 783
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/starter02.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod badinput03 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput03", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod badinput18 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput18", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod impossible {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("impossible", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/impossible.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("impossible", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/impossible.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("impossible", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 3675
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/impossible.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod badinput17 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput17", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod trivial02 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("trivial02", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/trivial02.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("trivial02", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/trivial02.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("trivial02", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 44
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/trivial02.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod badinput08 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput08", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Err(JumpINParseError)
+    }
+}
+mod expert25 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("expert25", parse_res())
+    }
+    fn parse_res() -> Result<JumpIN, JumpINParseError> {
+        Ok(puzzle())
+    }
+    fn puzzle() -> JumpIN {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert25.puz.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("expert25", puzzle(), solve_res())
+    }
+    fn solve_res() -> Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert25.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("expert25", &puzzle(), &move_tree())
+    }
+    fn move_tree() -> MoveTree<<JumpIN as Puzzle>::Move, JumpIN> {
+        // move_tree.size() = 6241
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/expert25.mt.btc.z").unwrap(),
         ))
         .unwrap()
     }
