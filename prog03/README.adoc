@@ -466,7 +466,7 @@ the new gameboard (`JumpIN` puzzle state).  This method implements the game
 rules with respect to foxes.  Let `posb` (backward) be the previous position
 in direction `dir` and let `posf` (forward) be the next position in direction
 `dir`.  Check that there are matching fox components at positions `posb` and
-`posf` and that `posf` is an empty space.  If so, then it should copy the
+`pos` and that `posf` is an empty space.  If so, then it should copy the
 current gameboard into a new gameboard, update `posf` in the new gameboard to
 `Some` of the object at `pos` in the current gameboard, update `pos` in the new
 gameboard to `Some` of the object at `posb` in the current gameboard, and update
