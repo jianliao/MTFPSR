@@ -453,26 +453,26 @@ tries to move a fox at that position in that direction.
 `gb.move_rabbit(pos, dir`) attempts to move a rabbit at position `pos` in the
 direction `dir`; if successful, return the rabbit object that was moved and the
 new gameboard (`JumpIN` puzzle state).  This method implements the game rules
-with respect to rabbits.  Check that there is a rabbit
-at position `pos`, that the next position in the direction `dir` is an obstacle
-(a rabbit must jump over at least one obstacle), and find the position `posd`
-(destination) of the first empty space in the direction `dir`.  If so, then it should copy the current gameboard into a new gameboard,
-update `pos` in the new gameboard to `None` and update `posd` in the new
-gameboard to `Some`.
+with respect to rabbits.  Check that there is a rabbit at position `pos`, that
+the next position in the direction `dir` is an obstacle (a rabbit must jump over
+at least one obstacle), and find the position `posd` (destination) of the first
+empty space in the direction `dir`.  If so, then it should copy the current
+gameboard into a new gameboard, update `pos` in the new gameboard to `None` and
+update `posd` in the new gameboard to `Some`.
 
 `gb.move_fox(pos, dir`) attempts to move a fox at position `pos` in the
 direction `dir`; if successful, return the fox head object that was moved and
 the new gameboard (`JumpIN` puzzle state).  This method implements the game
-rules with respect to foxes.  Let `posb` (backward) be the previous position
-in direction `dir` and let `posf` (forward) be the next position in direction
+rules with respect to foxes.  Let `posb` (backward) be the previous position in
+direction `dir` and let `posf` (forward) be the next position in direction
 `dir`.  Check that there are matching fox components at positions `posb` and
-`pos` and that `posf` is an empty space.  If so, then it should copy the
-current gameboard into a new gameboard, update `posf` in the new gameboard to
-`Some` of the object at `pos` in the current gameboard, update `pos` in the new
-gameboard to `Some` of the object at `posb` in the current gameboard, and update
-`posd` in the new gameboard to `None`.  Note that the object returned by the
-`move_fox` method should be a fox head object, which is not necessarily the
-object that is at position `pos` in the current gameboard.
+`pos` and that `posf` is an empty space.  If so, then it should copy the current
+gameboard into a new gameboard, update `posf` in the new gameboard to `Some` of
+the object at `pos` in the current gameboard, update `pos` in the new gameboard
+to `Some` of the object at `posb` in the current gameboard, and update `posd` in
+the new gameboard to `None`.  Note that the object returned by the `move_fox`
+method should be a fox head object, which is not necessarily the object that is
+at position `pos` in the current gameboard.
 
 #### `main` function
 
