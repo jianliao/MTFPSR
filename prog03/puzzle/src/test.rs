@@ -20,10 +20,10 @@ impl<M, V> MoveTree<M, V> {
         P: Puzzle<Move = M>,
         F: Fn(P) -> V,
     {
-        MoveTree::build_aux(d, p, f)
+        MoveTree::build_aux(d, p, &f)
     }
 
-    fn build_aux<P, F>(d: usize, p: &P, f: F) -> MoveTree<M, V>
+    fn build_aux<P, F>(d: usize, p: &P, f: &F) -> MoveTree<M, V>
     where
         P: Puzzle<Move = M>,
         F: Fn(P) -> V,
@@ -35,7 +35,7 @@ impl<M, V> MoveTree<M, V> {
                 p.next()
                     .into_iter()
                     .map(|(m, q)| {
-                        let nt = MoveTree::build_aux(d - 1, &q, &f);
+                        let nt = MoveTree::build_aux(d - 1, &q, f);
                         (m, (f(q), nt))
                     })
                     .collect(),
