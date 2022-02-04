@@ -29,21 +29,69 @@ fn parse_test(file_stem: &str, parse_test_res: Result<(), FarmParseError>) -> Re
     }
 }
 
+fn check_test(
+    file_stem: &str,
+    pre_puzzle: &Farm,
+    (mvs_soln, goal_soln_ufo): (Vec<Direction>, String),
+) -> Result<(), String> {
+    let puzzle = IotCS::new(pre_puzzle);
+    match puzzle::check(puzzle, &mvs_soln) {
+        None => {
+            return Err(format!(
+                "{file_stem} reference solution ({}) failed `puzzle::check`",
+                moves_to_string(&mvs_soln)
+            ))
+        }
+        Some(goal_chk) => {
+            let goal_chk_ufo = goal_chk.ufo_with_cattle_to_string();
+            if goal_soln_ufo != goal_chk_ufo {
+                return Err(format!("{file_stem} reference solution ({}) final UFO config ({goal_soln_ufo}) does not equal `puzzle::check` final UFO config ({goal_chk_ufo}).", moves_to_string(&mvs_soln)));
+            }
+        }
+    };
+    Ok(())
+}
+
 fn solve_test(
     file_stem: &str,
-    puzzle: &Farm,
-    solve_test_res: Option<(Vec<Direction>, String)>,
+    pre_puzzle: &Farm,
+    soln: Option<(Vec<Direction>, String)>,
 ) -> Result<(), String> {
-    match (puzzle::solve(IotCS::new(puzzle)), solve_test_res) {
-    (None, None) => Ok(()),
-    (Some((mvs, _)), None) => Err(format!("{file_stem} has solution ({}), but reference has no solution; likely has an invalid move and/or an incorrect `is_goal()`.", moves_to_string(&mvs))),
-    (None, Some((mvs_res,_))) => Err(format!("{file_stem} has no solution, but reference has solution ({}).", moves_to_string(&mvs_res))),
-    (Some((mvs,puzzle)), Some((mvs_res,puzzle_res))) => match mvs.len().cmp(&mvs_res.len()) {
-      std::cmp::Ordering::Greater => Err(format!("{file_stem} solution ({}) is longer than reference solution ({}).", moves_to_string(&mvs), moves_to_string(&mvs_res))),
-      std::cmp::Ordering::Equal => if puzzle.ufo_with_cattle_to_string() == puzzle_res { Ok(()) } else { Err(format!("{file_stem} solution ({}) final UFO config ({}) does not equal reference solution ({}) final UFO config ({}); likely has an invalid move and/or an incorrect `is_goal()`.", moves_to_string(&mvs), puzzle.ufo_with_cattle_to_string(), moves_to_string(&mvs_res), puzzle_res)) },
-      std::cmp::Ordering::Less => Err(format!("{file_stem} solution ({}) is shorter than reference solution ({}); likely has an invalid move and/or an incorrect `is_goal()`.", moves_to_string(&mvs), moves_to_string(&mvs_res))),
-    },
-  }
+    match (puzzle::solve(IotCS::new(pre_puzzle)), soln) {
+        (None, None) => Ok(()),
+        (Some((mvs, _)), None) => Err(format!("{file_stem} has solution ({}), but reference has no solution; likely has an invalid move and/or an incorrect `is_goal()`.", moves_to_string(&mvs))),
+        (None, Some((mvs_res, _))) => Err(format!("{file_stem} has no solution, but reference has solution ({}).", moves_to_string(&mvs_res))),
+        (Some((mvs, goal)), Some((mvs_soln, goal_soln_ufo))) => {
+            match puzzle::check(IotCS::new(pre_puzzle), &mvs) {
+                None => return Err(format!("{file_stem} solution ({}) failed `puzzle::check`.", moves_to_string(&mvs))),
+                Some(goal_chk) => {
+                    if goal != goal_chk {
+                        return Err(format!("{file_stem} solution ({}) final gameboard does not equal `puzzle::check` final gameboard.", moves_to_string(&mvs)));
+                    }
+                }
+            };
+            let goal_ufo = goal.ufo_with_cattle_to_string();
+            match mvs.len().cmp(&mvs_soln.len()) {
+                std::cmp::Ordering::Greater => Err(format!("{file_stem} solution ({}) is longer than reference solution ({}).", moves_to_string(&mvs), moves_to_string(&mvs_soln))),
+                std::cmp::Ordering::Equal => {
+                    if goal_ufo == goal_soln_ufo {
+                        Ok(())
+                    } else {
+                        Err(format!(
+                            "{file_stem} solution ({}) final UFO config ({goal_ufo}) does not equal reference solution ({}) final UFO config ({goal_soln_ufo}); likely has an invalid move and/or an incorrect `is_goal()`.",
+                            moves_to_string(&mvs),
+                            moves_to_string(&mvs_soln)
+                        ))
+                    }
+                }
+                std::cmp::Ordering::Less => Err(format!(
+                    "{file_stem} solution ({}) is shorter than reference solution ({}); likely has an invalid move and/or an incorrect `is_goal()`.",
+                    moves_to_string(&mvs),
+                    moves_to_string(&mvs_soln)
+                )),
+            }
+        }
+    }
 }
 
 fn moves_test(
@@ -66,12 +114,14 @@ fn moves_test(
                 format!("{file_stem} with moves {}", moves_to_string(&ms))
             };
             match err {
-                MoveTreeVerifyError::MissingMove(m) => {
-                    Err(format!("{s}, `next()` is missing move {m:?}"))
-                }
-                MoveTreeVerifyError::ExtraMove(m) => {
-                    Err(format!("{s}, `next()` has invalid move {m:?}"))
-                }
+                MoveTreeVerifyError::MissingMove(m) => Err(format!(
+                    "{s}, `next()` is missing move {}",
+                    moves_to_string(&[m])
+                )),
+                MoveTreeVerifyError::ExtraMove(m) => Err(format!(
+                    "{s}, `next()` has invalid move {}",
+                    moves_to_string(&[m])
+                )),
                 MoveTreeVerifyError::ChkState(m, _) => Err(format!(
                     "{s}, `next()` includes move {} leading to state with an incorrect UFO config",
                     moves_to_string(&[m])
@@ -86,23 +136,24 @@ mod trivial {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("trivial", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("trivial", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("trivial")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("trivial", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/trivial.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("trivial", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("trivial", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -143,23 +194,24 @@ mod easy00 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("easy00", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("easy00", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("easy00")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("easy00", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/easy00.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("easy00", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("easy00", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -200,23 +252,24 @@ mod superhard40 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("superhard40", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("superhard40", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("superhard40")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("superhard40", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/superhard40.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("superhard40", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("superhard40", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -257,23 +310,24 @@ mod easy10 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("easy10", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("easy10", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("easy10")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("easy10", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/easy10.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("easy10", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("easy10", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -314,23 +368,24 @@ mod easy01 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("easy01", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("easy01", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("easy01")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("easy01", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/easy01.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("easy01", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("easy01", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -360,23 +415,24 @@ mod medium20 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("medium20", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("medium20", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("medium20")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("medium20", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/medium20.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("medium20", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("medium20", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -406,23 +462,20 @@ mod impossible {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("impossible", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("impossible", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("impossible")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("impossible", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/impossible.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("impossible", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -441,23 +494,24 @@ mod superhard31 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("superhard31", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("superhard31", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("superhard31")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("superhard31", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/superhard31.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("superhard31", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("superhard31", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -476,23 +530,24 @@ mod hard30 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("hard30", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("hard30", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("hard30")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("hard30", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/hard30.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("hard30", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("hard30", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -522,23 +577,24 @@ mod challenge {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("challenge", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("challenge", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("challenge")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("challenge", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/challenge.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("challenge", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("challenge", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -557,23 +613,24 @@ mod medium11 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("medium11", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("medium11", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("medium11")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("medium11", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/medium11.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("medium11", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("medium11", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
@@ -592,23 +649,24 @@ mod hard21 {
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("hard21", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Ok(())
+        parse_test("hard21", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
         load("hard21")
     }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("hard21", &puzzle()?, solve_res())
-    }
-    fn solve_res() -> Option<(Vec<Direction>, String)> {
+    fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/hard21.soln.btc.z").unwrap(),
         ))
         .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("hard21", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("hard21", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
