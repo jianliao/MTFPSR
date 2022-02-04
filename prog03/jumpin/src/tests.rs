@@ -23,16 +23,23 @@ fn parse_test(
     file_stem: &str,
     parse_test_res: Result<JumpIN, JumpINParseError>,
 ) -> Result<(), String> {
-    let src = fs::read_to_string(format!("./assets/{file_stem}.txt")).unwrap();
+    let src =
+        fs::read_to_string(format!("./assets/{file_stem}.txt", file_stem = file_stem)).unwrap();
     match (src.parse::<JumpIN>(), parse_test_res) {
         (Err(_), Err(_)) => Ok(()),
-        (Err(_), Ok(_)) => Err(format!("JumpIN::from_str of {file_stem} should not fail.")),
-        (Ok(_), Err(_)) => Err(format!("JumpIN::from_str of {file_stem} should fail.")),
+        (Err(_), Ok(_)) => Err(format!(
+            "`JumpIN::from_str` of {file_stem} should not fail.",
+            file_stem = file_stem
+        )),
+        (Ok(_), Err(_)) => Err(format!(
+            "`JumpIN::from_str` of {file_stem} should fail.",
+            file_stem = file_stem
+        )),
         (Ok(puzzle), Ok(puzzle_res)) => {
             if puzzle == puzzle_res {
                 Ok(())
             } else {
-                Err(format!("JumpIN::from_str of {file_stem} succeeded, but does not equal expected JumpIN value."))
+                Err(format!("`JumpIN::from_str` of {file_stem} succeeded, but does not equal expected JumpIN value.", file_stem = file_stem))
             }
         }
     }
@@ -46,14 +53,14 @@ fn check_test(
     match puzzle::check(puzzle, &mvs_soln) {
         None => {
             return Err(format!(
-                "{file_stem} reference solution ({}) failed `puzzle::check`",
-                moves_to_string(&mvs_soln)
+                "{file_stem} reference solution ({mvs}) failed `puzzle::check`",
+                file_stem = file_stem,
+                mvs = moves_to_string(&mvs_soln)
             ))
         }
         Some(goal_chk) => {
             if goal_soln != goal_chk {
-                return Err(format!("{file_stem} reference solution ({}) final gameboard does not equal `puzzle::check` final gameboard.",
-                                   moves_to_string(&mvs_soln)));
+                return Err(format!("{file_stem} reference solution ({mvs}) final gameboard does not equal `puzzle::check` final gameboard.", file_stem = file_stem, mvs = moves_to_string(&mvs_soln)));
             }
         }
     };
@@ -63,42 +70,38 @@ fn check_test(
 fn solve_test(
     file_stem: &str,
     puzzle: JumpIN,
-    solve_test_res: Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)>,
+    soln: Option<(Vec<<JumpIN as Puzzle>::Move>, JumpIN)>,
 ) -> Result<(), String> {
-    match (puzzle::solve(puzzle), solve_test_res) {
+    match (puzzle::solve(puzzle), soln) {
         (None, None) => Ok(()),
-        (Some((mvs, _)), None) =>
-            Err(format!("{file_stem} has solution ({}), but reference has no solution; likely has an invalid move and/or an incorrect `is_goal`.",
-                        moves_to_string(&mvs))),
-        (None, Some((mvs_soln,_))) =>
-            Err(format!("{file_stem} has no solution, but reference has solution ({}).",
-                        moves_to_string(&mvs_soln))),
-        (Some((mvs,goal)), Some((mvs_soln,goal_soln))) => {
+        (Some((mvs, _)), None) => Err(format!("{file_stem} has solution ({mvs}), but reference has no solution; likely has an invalid move and/or an incorrect `JumpIN::is_goal`.", file_stem = file_stem, mvs = moves_to_string(&mvs))),
+        (None, Some((mvs_soln, _))) => Err(format!("{file_stem} has no solution, but reference has solution ({mvs}).", file_stem = file_stem, mvs = moves_to_string(&mvs_soln))),
+        (Some((mvs, goal)), Some((mvs_soln, goal_soln))) => {
             match puzzle::check(puzzle, &mvs) {
-                None =>
-                    return Err(format!("{file_stem} solution ({}) failed `puzzle::check`.",
-                                       moves_to_string(&mvs))),
-                Some(goal_chk) =>
+                None => return Err(format!("{file_stem} solution ({mvs}) failed `puzzle::check`.", file_stem = file_stem, mvs = moves_to_string(&mvs))),
+                Some(goal_chk) => {
                     if goal != goal_chk {
-                        return Err(format!("{file_stem} solution ({}) final gameboard does not equal `puzzle::check` final gameboard.",
-                                           moves_to_string(&mvs)))
+                        return Err(format!("{file_stem} solution ({mvs}) final gameboard does not equal `puzzle::check` final gameboard.", file_stem = file_stem, mvs = moves_to_string(&mvs)));
                     }
+                }
             };
             match mvs.len().cmp(&mvs_soln.len()) {
-                std::cmp::Ordering::Greater =>
-                    Err(format!("{file_stem} solution ({}) is longer than reference solution ({}).",
-                                moves_to_string(&mvs), moves_to_string(&mvs_soln))),
-                std::cmp::Ordering::Equal =>
+                std::cmp::Ordering::Greater => Err(format!("{file_stem} solution ({mvs}) is longer than reference solution ({mvs_soln}).", file_stem = file_stem, mvs = moves_to_string(&mvs), mvs_soln = moves_to_string(&mvs_soln))),
+                std::cmp::Ordering::Equal => {
                     if goal == goal_soln {
                         Ok(())
                     } else {
-                        Err(format!("{file_stem} solution ({}) final gameboard does not equal reference solution ({}) final gameboard; likely has an invalid move and/or an incorrect `is_goal`.",
-                                    moves_to_string(&mvs), moves_to_string(&mvs_soln)))
-                    },
-                std::cmp::Ordering::Less =>
-                    Err(format!("{file_stem} solution ({}) is shorter than reference solution ({}); likely has an invalid move and/or an incorrect `is_goal`.",
-                                moves_to_string(&mvs), moves_to_string(&mvs_soln))),
-        }},
+                        Err(format!(
+                            "{file_stem} solution ({mvs}) final gameboard does not equal reference solution ({mvs_soln}) final gameboard; likely has an incorrect `JumpIN::next` (invalid move) and/or an incorrect `JumpIN::is_goal`.",
+                            file_stem = file_stem,
+                            mvs = moves_to_string(&mvs),
+                            mvs_soln = moves_to_string(&mvs_soln)
+                        ))
+                    }
+                }
+                std::cmp::Ordering::Less => Err(format!("{file_stem} solution ({mvs}) is shorter than reference solution ({mvs_soln}); likely has  incorrect `JumpIN::next` (invalid move) and/or an incorrect `JumpIN::is_goal`.", file_stem = file_stem, mvs = moves_to_string(&mvs), mvs_soln = moves_to_string(&mvs_soln))),
+            }
+        }
     }
 }
 
@@ -113,23 +116,30 @@ fn moves_test(
     ) {
         Ok(()) => Ok(()),
         Err((ms, err)) => {
-            let s = if ms.is_empty() {
-                format!("{file_stem}")
+            let state = if ms.is_empty() {
+                file_stem.to_string()
             } else {
-                format!("{file_stem} with moves {}", moves_to_string(&ms))
+                format!(
+                    "{file_stem} with moves {mvs}",
+                    file_stem = file_stem,
+                    mvs = moves_to_string(&ms)
+                )
             };
             match err {
                 MoveTreeVerifyError::MissingMove(m) => Err(format!(
-                    "{s}, `next()` is missing move {}",
-                    moves_to_string(&[m])
+                    "{state}, `next()` is missing move {m}",
+                    state = state,
+                    m = moves_to_string(&[m])
                 )),
                 MoveTreeVerifyError::ExtraMove(m) => Err(format!(
-                    "{s}, `next()` has invalid move {}",
-                    moves_to_string(&[m])
+                    "{state}, `next()` has invalid move {m}",
+                    state = state,
+                    m = moves_to_string(&[m])
                 )),
                 MoveTreeVerifyError::ChkState(m, _) => Err(format!(
-                    "{s}, `next()` includes move {} leading to an incorrect state",
-                    moves_to_string(&[m])
+                    "{state}, `next()` includes move {m} leading to an incorrect state",
+                    state = state,
+                    m = moves_to_string(&[m])
                 )),
             }
         }
