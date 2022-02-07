@@ -46,6 +46,7 @@ impl<M, V> MoveTree<M, V> {
 
 pub enum MoveTreeVerifyError<M, E> {
     MissingMove(M),
+    DuplicateMove(M),
     ExtraMove(M),
     ChkState(M, E),
 }
@@ -79,6 +80,12 @@ impl<M, V> MoveTree<M, V> {
                     if mqs.iter().all(|(m, _)| k != m) {
                         let prefix: Vec<P::Move> = prefix.drain(..).collect();
                         return Err((prefix, MoveTreeVerifyError::MissingMove(k.clone())));
+                    }
+                }
+                for (m, _) in mqs.iter() {
+                    if mqs.iter().filter(|(n, _)| m == n).count() > 1 {
+                        let prefix: Vec<P::Move> = prefix.drain(..).collect();
+                        return Err((prefix, MoveTreeVerifyError::DuplicateMove(m.clone())));
                     }
                 }
                 for (m, q) in mqs.into_iter() {

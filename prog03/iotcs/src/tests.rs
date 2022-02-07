@@ -17,7 +17,7 @@ fn load(file_stem: &str) -> Result<Farm, String> {
     match src.parse::<Farm>() {
         Ok(puzzle) => Ok(puzzle),
         Err(_) => Err(format!(
-            "Farm::from_str of {file_stem} should not fail.",
+            "`Farm::from_str` of {file_stem} should not fail.",
             file_stem = file_stem
         )),
     }
@@ -57,7 +57,13 @@ fn check_test(
         Some(goal_chk) => {
             let goal_chk_ufo = goal_chk.ufo_with_cattle_to_string();
             if goal_soln_ufo != goal_chk_ufo {
-                return Err(format!("{file_stem} reference solution ({mvs_soln}) final UFO config ({goal_soln_ufo}) does not equal `puzzle::check` final UFO config ({goal_chk_ufo}).", file_stem = file_stem, mvs_soln = moves_to_string(&mvs_soln), goal_soln_ufo = goal_soln_ufo, goal_chk_ufo = goal_chk_ufo));
+                return Err(format!(
+                    "{file_stem} reference solution ({mvs_soln}) final UFO config ({goal_soln_ufo}) does not equal `puzzle::check` final UFO config ({goal_chk_ufo}).",
+                    file_stem = file_stem,
+                    mvs_soln = moves_to_string(&mvs_soln),
+                    goal_soln_ufo = goal_soln_ufo,
+                    goal_chk_ufo = goal_chk_ufo
+                ));
             }
         }
     };
@@ -71,26 +77,49 @@ fn solve_test(
 ) -> Result<(), String> {
     match (puzzle::solve(IotCS::new(pre_puzzle)), soln) {
         (None, None) => Ok(()),
-        (Some((mvs, _)), None) => Err(format!("{file_stem} has solution ({mvs}), but reference has no solution; likely has an invalid move and/or an incorrect `is_goal()`.", file_stem = file_stem, mvs = moves_to_string(&mvs))),
-        (None, Some((mvs_soln, _))) => Err(format!("{file_stem} has no solution, but reference has solution ({mvs_soln}).", file_stem = file_stem, mvs_soln = moves_to_string(&mvs_soln))),
+        (Some((mvs, _)), None) => Err(format!(
+            "{file_stem} has solution ({mvs}), but reference has no solution; likely has an incorrect `IotCS::next` (invalid move) and/or an incorrect `IotCS::is_goal`.",
+            file_stem = file_stem,
+            mvs = moves_to_string(&mvs)
+        )),
+        (None, Some((mvs_soln, _))) => Err(format!(
+            "{file_stem} has no solution, but reference has solution ({mvs_soln}).",
+            file_stem = file_stem,
+            mvs_soln = moves_to_string(&mvs_soln)
+        )),
         (Some((mvs, goal)), Some((mvs_soln, goal_soln_ufo))) => {
             match puzzle::check(IotCS::new(pre_puzzle), &mvs) {
-                None => return Err(format!("{file_stem} solution ({mvs}) failed `puzzle::check`.", file_stem = file_stem, mvs = moves_to_string(&mvs))),
+                None => {
+                    return Err(format!(
+                        "{file_stem} solution ({mvs}) failed `puzzle::check`.",
+                        file_stem = file_stem,
+                        mvs = moves_to_string(&mvs)
+                    ))
+                }
                 Some(goal_chk) => {
                     if goal != goal_chk {
-                        return Err(format!("{file_stem} solution ({mvs}) final gameboard does not equal `puzzle::check` final gameboard.", file_stem = file_stem, mvs = moves_to_string(&mvs)));
+                        return Err(format!(
+                            "{file_stem} solution ({mvs}) final gameboard does not equal `puzzle::check` final gameboard.",
+                            file_stem = file_stem,
+                            mvs = moves_to_string(&mvs)
+                        ));
                     }
                 }
             };
             let goal_ufo = goal.ufo_with_cattle_to_string();
             match mvs.len().cmp(&mvs_soln.len()) {
-                std::cmp::Ordering::Greater => Err(format!("{file_stem} solution ({mvs}) is longer than reference solution ({mvs_soln}).", file_stem = file_stem, mvs = moves_to_string(&mvs), mvs_soln = moves_to_string(&mvs_soln))),
+                std::cmp::Ordering::Greater => Err(format!(
+                    "{file_stem} solution ({mvs}) is longer than reference solution ({mvs_soln}).",
+                    file_stem = file_stem,
+                    mvs = moves_to_string(&mvs),
+                    mvs_soln = moves_to_string(&mvs_soln)
+                )),
                 std::cmp::Ordering::Equal => {
                     if goal_ufo == goal_soln_ufo {
                         Ok(())
                     } else {
                         Err(format!(
-                            "{file_stem} solution ({mvs}) final UFO config ({goal_ufo}) does not equal reference solution ({mvs_soln}) final UFO config ({goal_soln_ufo}); likely has an invalid move and/or an incorrect `is_goal()`.",
+                            "{file_stem} solution ({mvs}) final UFO config ({goal_ufo}) does not equal reference solution ({mvs_soln}) final UFO config ({goal_soln_ufo}); likely has an incorrect `IotCS::next` (invalid move) and/or an incorrect `IotCS::is_goal`.",
                             file_stem = file_stem,
                             mvs = moves_to_string(&mvs),
                             goal_ufo = goal_ufo,
@@ -99,7 +128,12 @@ fn solve_test(
                         ))
                     }
                 }
-                std::cmp::Ordering::Less => Err(format!("{file_stem} solution ({mvs}) is shorter than reference solution ({mvs_soln}); likely has an invalid move and/or an incorrect `is_goal()`.", file_stem = file_stem, mvs = moves_to_string(&mvs), mvs_soln = moves_to_string(&mvs_soln))),
+                std::cmp::Ordering::Less => Err(format!(
+                    "{file_stem} solution ({mvs}) is shorter than reference solution ({mvs_soln}); likely has an incorrect `IotCS::next` (invalid move) and/or an incorrect `IotCS::is_goal`.",
+                    file_stem = file_stem,
+                    mvs = moves_to_string(&mvs),
+                    mvs_soln = moves_to_string(&mvs_soln)
+                )),
             }
         }
     }
@@ -119,8 +153,8 @@ fn moves_test(
     }) {
         Ok(()) => Ok(()),
         Err((ms, err)) => {
-            let s = if ms.is_empty() {
-                format!("{file_stem}", file_stem = file_stem)
+            let state = if ms.is_empty() {
+                file_stem.to_string()
             } else {
                 format!(
                     "{file_stem} with moves {mvs}",
@@ -130,18 +164,23 @@ fn moves_test(
             };
             match err {
                 MoveTreeVerifyError::MissingMove(m) => Err(format!(
-                    "{s}, `next()` is missing move {m}",
-                    s = s,
+                    "{state}, `IotCS::next` is missing move {m}",
+                    state = state,
                     m = moves_to_string(&[m])
                 )),
                 MoveTreeVerifyError::ExtraMove(m) => Err(format!(
-                    "{s}, `next()` has invalid move {m}",
-                    s = s,
+                    "{state}, `IotCS::next` has invalid move {m}",
+                    state = state,
+                    m = moves_to_string(&[m])
+                )),
+                MoveTreeVerifyError::DuplicateMove(m) => Err(format!(
+                    "{state}, `IotCS::next` has duplicate move {m}",
+                    state = state,
                     m = moves_to_string(&[m])
                 )),
                 MoveTreeVerifyError::ChkState(m, _) => Err(format!(
-                    "{s}, `next()` includes move {m} leading to state with an incorrect UFO config",
-                    s = s,
+                    "{state}, `IotCS::next` includes move {m} leading to state with an incorrect UFO config",
+                    state = state,
                     m = moves_to_string(&[m])
                 )),
             }
