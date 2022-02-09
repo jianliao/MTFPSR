@@ -188,106 +188,12 @@ fn moves_test(
     }
 }
 
-mod trivial {
+mod badinput00 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("trivial", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("trivial")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/trivial.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("trivial", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("trivial", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("trivial", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 22208
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/trivial.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod badinput07 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput07", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Err(FarmParseError)
-    }
-}
-mod badinput02 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput02", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Err(FarmParseError)
-    }
-}
-mod easy00 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("easy00", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("easy00")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/easy00.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("easy00", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("easy00", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("easy00", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 43938
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/easy00.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod badinput10 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput10", parse_res())
+        parse_test("badinput00", parse_res())
     }
     fn parse_res() -> Result<(), FarmParseError> {
         Err(FarmParseError)
@@ -304,48 +210,23 @@ mod badinput01 {
         Err(FarmParseError)
     }
 }
-mod superhard40 {
+mod badinput02 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("superhard40", Ok(()))
+        parse_test("badinput02", parse_res())
     }
-    fn puzzle() -> Result<Farm, String> {
-        load("superhard40")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/superhard40.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("superhard40", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("superhard40", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("superhard40", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 337584
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/superhard40.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
+    fn parse_res() -> Result<(), FarmParseError> {
+        Err(FarmParseError)
     }
 }
-mod badinput06 {
+mod badinput03 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("badinput06", parse_res())
+        parse_test("badinput03", parse_res())
     }
     fn parse_res() -> Result<(), FarmParseError> {
         Err(FarmParseError)
@@ -362,48 +243,45 @@ mod badinput04 {
         Err(FarmParseError)
     }
 }
-mod easy10 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("easy10", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("easy10")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/easy10.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("easy10", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("easy10", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("easy10", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 73449
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/easy10.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
 mod badinput05 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
         parse_test("badinput05", parse_res())
+    }
+    fn parse_res() -> Result<(), FarmParseError> {
+        Err(FarmParseError)
+    }
+}
+mod badinput06 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput06", parse_res())
+    }
+    fn parse_res() -> Result<(), FarmParseError> {
+        Err(FarmParseError)
+    }
+}
+mod badinput07 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput07", parse_res())
+    }
+    fn parse_res() -> Result<(), FarmParseError> {
+        Err(FarmParseError)
+    }
+}
+mod badinput08 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("badinput08", parse_res())
     }
     fn parse_res() -> Result<(), FarmParseError> {
         Err(FarmParseError)
@@ -420,210 +298,12 @@ mod badinput09 {
         Err(FarmParseError)
     }
 }
-mod easy01 {
+mod badinput10 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("easy01", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("easy01")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/easy01.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("easy01", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("easy01", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("easy01", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 93004
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/easy01.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod badinput00 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput00", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Err(FarmParseError)
-    }
-}
-mod medium20 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("medium20", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("medium20")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/medium20.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("medium20", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("medium20", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("medium20", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 29962
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/medium20.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod badinput03 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput03", parse_res())
-    }
-    fn parse_res() -> Result<(), FarmParseError> {
-        Err(FarmParseError)
-    }
-}
-mod impossible {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("impossible", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("impossible")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/impossible.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("impossible", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("impossible", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 36104
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/impossible.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod superhard31 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("superhard31", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("superhard31")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/superhard31.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("superhard31", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("superhard31", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("superhard31", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 106477
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/superhard31.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod hard30 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("hard30", Ok(()))
-    }
-    fn puzzle() -> Result<Farm, String> {
-        load("hard30")
-    }
-    fn soln() -> Option<(Vec<Direction>, String)> {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/hard30.soln.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-    #[test]
-    fn check() -> Result<(), String> {
-        check_test("hard30", &puzzle()?, soln().unwrap())
-    }
-    #[test]
-    fn solve() -> Result<(), String> {
-        solve_test("hard30", &puzzle()?, soln())
-    }
-    #[test]
-    fn moves() -> Result<(), String> {
-        moves_test("hard30", &puzzle()?, &move_tree())
-    }
-    fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 113725
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/hard30.mt.btc.z").unwrap(),
-        ))
-        .unwrap()
-    }
-}
-mod badinput08 {
-    use super::*;
-
-    #[test]
-    fn parse() -> Result<(), String> {
-        parse_test("badinput08", parse_res())
+        parse_test("badinput10", parse_res())
     }
     fn parse_res() -> Result<(), FarmParseError> {
         Err(FarmParseError)
@@ -658,45 +338,117 @@ mod challenge {
         moves_test("challenge", &puzzle()?, &move_tree())
     }
     fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 133351
+        // move_tree.size() = 21731
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/challenge.mt.btc.z").unwrap(),
         ))
         .unwrap()
     }
 }
-mod medium11 {
+mod easy00 {
     use super::*;
 
     #[test]
     fn parse() -> Result<(), String> {
-        parse_test("medium11", Ok(()))
+        parse_test("easy00", Ok(()))
     }
     fn puzzle() -> Result<Farm, String> {
-        load("medium11")
+        load("easy00")
     }
     fn soln() -> Option<(Vec<Direction>, String)> {
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/medium11.soln.btc.z").unwrap(),
+            fs::File::open("./assets/btc/easy00.soln.btc.z").unwrap(),
         ))
         .unwrap()
     }
     #[test]
     fn check() -> Result<(), String> {
-        check_test("medium11", &puzzle()?, soln().unwrap())
+        check_test("easy00", &puzzle()?, soln().unwrap())
     }
     #[test]
     fn solve() -> Result<(), String> {
-        solve_test("medium11", &puzzle()?, soln())
+        solve_test("easy00", &puzzle()?, soln())
     }
     #[test]
     fn moves() -> Result<(), String> {
-        moves_test("medium11", &puzzle()?, &move_tree())
+        moves_test("easy00", &puzzle()?, &move_tree())
     }
     fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 212206
+        // move_tree.size() = 7849
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
-            fs::File::open("./assets/btc/medium11.mt.btc.z").unwrap(),
+            fs::File::open("./assets/btc/easy00.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod easy01 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("easy01", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("easy01")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/easy01.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("easy01", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("easy01", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("easy01", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 36272
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/easy01.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod easy10 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("easy10", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("easy10")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/easy10.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("easy10", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("easy10", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("easy10", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 66513
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/easy10.mt.btc.z").unwrap(),
         ))
         .unwrap()
     }
@@ -730,9 +482,257 @@ mod hard21 {
         moves_test("hard21", &puzzle()?, &move_tree())
     }
     fn move_tree() -> MoveTree<Direction, String> {
-        // move_tree.size() = 28730
+        // move_tree.size() = 11615
         bincode::deserialize_from(flate2::read::ZlibDecoder::new(
             fs::File::open("./assets/btc/hard21.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod hard30 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("hard30", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("hard30")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/hard30.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("hard30", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("hard30", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("hard30", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 61079
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/hard30.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod impossible {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("impossible", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("impossible")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/impossible.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("impossible", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("impossible", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 36104
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/impossible.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod medium11 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("medium11", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("medium11")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/medium11.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("medium11", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("medium11", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("medium11", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 148753
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/medium11.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod medium20 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("medium20", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("medium20")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/medium20.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("medium20", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("medium20", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("medium20", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 20875
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/medium20.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod superhard31 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("superhard31", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("superhard31")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/superhard31.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("superhard31", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("superhard31", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("superhard31", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 103913
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/superhard31.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod superhard40 {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("superhard40", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("superhard40")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/superhard40.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("superhard40", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("superhard40", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("superhard40", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 90453
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/superhard40.mt.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+}
+mod trivial {
+    use super::*;
+
+    #[test]
+    fn parse() -> Result<(), String> {
+        parse_test("trivial", Ok(()))
+    }
+    fn puzzle() -> Result<Farm, String> {
+        load("trivial")
+    }
+    fn soln() -> Option<(Vec<Direction>, String)> {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/trivial.soln.btc.z").unwrap(),
+        ))
+        .unwrap()
+    }
+    #[test]
+    fn check() -> Result<(), String> {
+        check_test("trivial", &puzzle()?, soln().unwrap())
+    }
+    #[test]
+    fn solve() -> Result<(), String> {
+        solve_test("trivial", &puzzle()?, soln())
+    }
+    #[test]
+    fn moves() -> Result<(), String> {
+        moves_test("trivial", &puzzle()?, &move_tree())
+    }
+    fn move_tree() -> MoveTree<Direction, String> {
+        // move_tree.size() = 18338
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(
+            fs::File::open("./assets/btc/trivial.mt.btc.z").unwrap(),
         ))
         .unwrap()
     }

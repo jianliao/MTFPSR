@@ -371,8 +371,8 @@ on the gameboard.
 #### `Pos` type
 
 The `Pos` type represents a position on the gameboard.  The North-West corner of
-the gameboard is `Pos {x: 0, y: 0}`, the North-East corner of the gameboard `Pos
-{x: 4, y: 0}`, the South-West corner of the gameboard is
+the gameboard is `Pos {x: 0, y: 0}`, the North-East corner of the gameboard
+`Pos {x: 4, y: 0}`, the South-West corner of the gameboard is
 `Pos {x: 0, y: 4}`, and the South-East corner of the gameboard is
 `Pos {x: 4, y: 4}`.
 
@@ -518,8 +518,6 @@ H  GH
 solution:
 F→W←F→→B↑F←←W→B←↓F←B↑→F→W←F→B←F→W→↓F←B→W↑→↓B↓F→B↑←W↑F←B↓F←W←↓G←W↑→B↑F←W←B←↓W↓B→F→W↑B←W↓B→G↑W↑G→W↓B←W↑F→→G↑←W→↓G→↓F←G↑W↑←↓G←F→W↑←F←G→F←W→F←G←↓F→G↑→W←↓F←B↑
 ----
-
-### Discussion/Hints
 
 ## `iotcs` (library and binary crates)
 
@@ -718,9 +716,10 @@ The `next` method enumerates all of the (legal) successor puzzle states of the
 current puzzle state, along with the move that leads to that successor puzzle
 state.  For
 https://www.thinkfun.com/products/invasion-of-the-cow-snatchers/[Invasion of the
-Cow Snatchers] puzzles, this means that the UFO does not move over the silo,
-that the UFO does not move over a wall with too many cattle, that the UFO does
-not move off of a side of the farm.
+Cow Snatchers] puzzles, this means that the UFO does not move off of a side of
+the farm, that the UFO does not move over the silo, that the UFO does not move
+over a wall with too many cattle, that the UFO does not pick up the red bull
+before all other cattle have been beamed up.
 
 #### `main` function
 
