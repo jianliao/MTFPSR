@@ -1,0 +1,594 @@
+# Programming Assignment 04
+
+:duetime: 11:59pm
+:duedayA: Wednesday, February 23, 2022
+:duedayB: Friday, March 4, 2022
+
+
+In this programming assignment, you will implement a fully-featured library for
+a https://en.wikipedia.org/wiki/Trie[trie], which is an efficient map from
+strings to values, and use it to implement a statistical spelling correction
+program based on http://norvig.com/spell-correct.html[an idea of Peter Norvig].
+
+**Note:** This is a two part assignment.  Part A is due {duedayA} and is
+comprised of activities in the `triemap` library crate; Part B is due {duedayB}
+and is comprised of activities in the `correct` library crate.  After {duedayA},
+a solution to Part A will be made available, which can be used to complete
+Part B.
+
+
+## Sources and Submission
+
+Sources for Programming Assignment&nbsp;04 have been (or will shortly be)
+committed to your repository in the `prog04` sub-directory.  If you cloned your
+repository before the Programming Assignment&nbsp;04 sources have been
+committed, then you will need to _pull_ the upstream changes into your local
+clone, by running the command:
+
+  git pull origin
+
+from the `__ritid__psr` directory.  It is best to _pull_ with no uncommitted
+changes in your local clone, but most commits made to the upstream repository
+will only add a new top-level directory and there should be no merge conflicts.
+
+We will tag programming assignments in the Git repositories at {duetime} on
+{dueday}; make sure that you have _committed_ and _pushed_ your final version
+before that time.  To do so, run the commands:
+
+  git commit -a
+  git push origin main
+
+from the `__ritid__psr` directory.  If old programming assignment comments or
+new programming assignment sources have been committed to your repository since
+you last pulled, then you will receive an error message when trying to push:
+
+  error: failed to push some refs to 'git.cs.rit.edu:psr2205/<ritid>psr.git'
+  hint: Updates were rejected because the remote contains work that you do
+  hint: not have locally. This is usually caused by another repository pushing
+  hint: to the same ref. You may want to first integrate the remote changes
+  hint: (e.g., 'git pull ...') before pushing again.
+  hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+To proceed, you will need to _pull_ the upstream changes into your local clone
+and then _push_ your local changes upstream, by running the commands:
+
+  git pull origin
+  git push origin main
+
+from the `__ritid__psr` directory.
+
+## Organization
+
+This project is organized as a workspace containing two crates:
+
+* link:./triemap[`triemap`] (library crate): A library for https://en.wikipedia.org/wiki/Trie[tries] (also called digital trees or prefix trees); defines the `TrieMap<V>` type, which maps strings to values
+* `correct` (library and binary crates): A statistical spelling correction program; uses the `triemap` crate
+
+## `trie` (library crate)
+
+**Complete all of the `unimplemented!()` methods and respond to the discussion
+prompts in link:./triemap/src/lib.rs[`./triemap/src/lib.rs`].** (Part A
+activity)
+
+### `TrieMap` methods
+
+Complete all of the `unimplemented!()` methods in
+link:./triemap/src/lib.rs[`./triemap/src/lib.rs`]:
+
+* (5pts) `next` for `TrieMap`
+* (5pts) `get` for `TrieMap`
+* (5pts) `get_mut` for `TrieMap`
+* (10pts) `insert` for `TrieMap`
+* (10pts) `remove` for `TrieMap`
+* (15pts) `into_iter` for https://doc.rust-lang.org/std/iter/trait.IntoIterator.html[`IntoIterator`] for `TrieMap`, `iter_mut` for `TrieMap`, `iter` for `TrieMap`, and `next` for https://doc.rust-lang.org/std/iter/trait.Iterator.html[`Iterator`] for `IntoIter`, `IterMut`, and `Iter`
++
+--
+Review https://doc.rust-lang.org/std/iter/index.html[`std::iter`], especially the https://doc.rust-lang.org/std/iter/index.html#implementing-iterator[Implementing Iterator] section, which notes: "Creating an iterator of your own involves two steps: creating a `struct` to hold the iterator's state, and then implementing https://doc.rust-lang.org/std/iter/trait.Iterator.html[`Iterator`] for that `struct`."
+
+Thus, to implement the `TrieMap` iterators, add fields for the iterator's state
+to the `IntoIter`, `IterMut`, and `Iter` `struct`-s.
+
+Also, review the
+https://git.cs.rit.edu/psr2215/notes/-/blob/main/05/iter8ors/src/triple.rs[`Triple`]
+and
+https://git.cs.rit.edu/psr2215/notes/-/blob/main/05/iter8ors/src/bintree.rs[`BinTree`]
+iterators that were discussed in lecture.
+
+Note that the `into_iter`, `iter_mut`, and `iter` methods for `TrieMap` must be
+_O(1)_.  This precludes an implementation that traverses the entire `TrieMap` at
+iterator-creation time and stores the elements in an auxiliary data structure
+(e.g., `Vec<(String, &V)>`) and returns an iterator on the auxiliary data
+structure.  Also note that the `next` methods for `IntoIter`, `IterMut`, and
+`Iter` should be _amortized_ _O(1)_.  This precludes an implementation that
+generates each item by searching the `TrieMap` from the root.
+
+Hint: Similar, but not identical, implementations suffice for all of the
+`TrieMap` iterators.
+--
+* (5pts) `size_hint` for https://doc.rust-lang.org/std/iter/trait.Iterator.html[`Iterator`] for `IntoIter`, `IterMut`, and `Iter`
+
+Each method is (briefly) documented in the source file and has a behavior
+similar to the corresponding function in
+https://doc.rust-lang.org/std/collections/struct.HashMap.html[`HashMap`].  (Try
+running `cargo doc --open` to view the rendered documention in a browser.)
+
+Note the requirements on some of the functions (in particular, that they be
+implemented with iteration (`loop`, `for`, and/or `Iterator` method(s)) and
+without recursion.)
+
+### Discussion Prompts
+
+Respond (in the provided space near the end of
+link:./triemap/src/lib.rs[`./triemap/src/lib.rs`]) to the discussion prompts:
+
+* (5pts) Comment on the amount of code duplication in your implementation of the
+  `TrieMap` library.  Explain why (with the current features of the Rust
+  language) it is not possible to share more code.
+* (5pts) Explain why the various iterators over string/value pairs return a
+  `String` rather than a `&str`.
+
+### Challenges
+
+The following are neither submission requirements nor extra credit work.  They
+are simply opportunities to challenge your understanding of and skills with
+Rust.
+
+#### Minimizing `String` allocations for `TrieMap` iterators
+
+The hint for `next` for
+https://doc.rust-lang.org/std/iter/trait.Iterator.html[`Iterator`] for `Iter`,
+`IterMut`, and `IntoIter` notes that the `String` type implements `Clone`.
+Nonetheless, one should strive to minimize unnecessary allocations.  Can you
+achieve an implementation of iterators that `clone()`-s as little as possible,
+ideally with at most one `clone()` per returned `String`?
+
+#### Double-ended Iterators
+
+Complete the `unimplemented!()` methods in
+link:./triemap/src/doubleendediterator.rs[`./triemap/src/doubleendediterator.rs`]:
+
+* `next_back` for https://doc.rust-lang.org/std/iter/trait.DoubleEndedIterator.html[`DoubleEndedIterator`] for `Iter`, `IterMut`, and `IntoIter`
+
+Comment out the `#[cfg(any())]` attribute immediately before
+`mod doubleendediterator;` to use the `doubleendediterator` sub-module.
+
+Hint: The simplest solution for (non-double-ended) iterators for `TrieMap` does
+not admit a `next_back` method.  It may help to think about how to adapt the
+pre-order
+https://git.cs.rit.edu/psr2215/notes/-/blob/main/05/iter8ors/src/bintree.rs[`BinTree`]
+iterator first to an in-order iterator, then to an in-order double-ended
+iterator, and then to a pre-order double-ended iterator.
+
+#### Iterative `remove`
+
+Unlike the `get`, `get_mut`, and `insert` methods, the assignment specification
+allows the `remove` method to be implemented with recursion.  Try to implement
+this method with iteration (`loop`, `for`, and/or some `Iterator` method(s)).
+Why doesn't the technique used to implement `get`, `get_mut`, and `insert`
+without recursion suffice to implement `remove` without recursion?  What does
+recursion establish that is not captured by iteration?
+
+#### `entry` API
+
+As noted in lecture, a number of Rust collections have an
+https://doc.rust-lang.org/std/collections/index.html#entries[`entry` API], which
+is intended to provide an efficient mechanism for manipulating the contents of a
+map conditionally on the presence of a key or not.
+
+Add fields to the `OccupiedEntry` and `VacantEntry` `struct`-s and complete the
+`unimplemented()!` methods in
+link:./triemap/src/entry.rs[`./triemap/src/entry.rs`].
+
+Remember, an
+https://doc.rust-lang.org/std/collections/index.html#entries[`entry` API] should
+be *efficient* and not require multiple searches of the collection.
+
+Note: The instructor has not achieved an entirely satisfactory
+https://doc.rust-lang.org/std/collections/index.html#entries[`entry` API] for
+`TrieMap`.  In particular, efficiently supporting the `remove` method for
+`OccupiedEntry` seems to run afoul of the same issues with an iterative `remove`
+method for `TrieMap` (see above).  An
+https://doc.rust-lang.org/std/collections/index.html#entries[`entry` API] for
+`TrieMap` that does not provide a `remove` method for `OccupiedEntry` seems much
+more tractable.
+
+Comment out the `#[cfg(any())]` attribute immediately before `mod entry;` to use
+the `entry` sub-module.
+
+## `correct` (library binary crate)
+
+**Complete all of the `unimplemented!()` functions in
+link:./correct/src/lib.rs[`./correct/src/lib.rs`].** (Part B activity)
+
+The `correct` library and binary crates use the `triemap` library crate to
+implement a statistical spelling correction program based on
+http://norvig.com/spell-correct.html[an idea of Peter Norvig].
+
+### Concept
+
+The purpose of the `correct` program is to find possible corrections for
+misspelled words.  It works in two phases.
+
+In the first phase, it loads a corpus of words (presumed to be correctly
+spelled) and builds a model that associates each word with its number of
+occurrences in the corpus.
+
+In the second phase, it uses the model to check individual words.  In
+particular, it checks whether a word is spelled correctly according to the model
+(i.e., the word exists in the corpus) and, if not, whether a "small edit" can
+reach a variant that is spelled correctly.
+
+Norvig suggest that a "small edit" is the application of one edit action
+possibly followed by the application of a second edit action to the result of
+the first, where an edit action is one of the following:
+
+* the deletion of one letter
+* the transposition of two adjacent letters
+* the replacement of one letter with a different letter
+* the insertion of one letter at any position
+
+If there exist variants reachable by one edit action that are spelled correctly,
+then suggest the one appearing most frequently in the corpus (breaking ties by
+the variant that occurs earliest in alphabetical order).  If there do not exist
+variants reachable by one edit action that are spelled correctly but there do
+exist variants reachable by two edit actions that are spelled correctly, then
+suggest the one appearing most frequently in the corpus (breaking ties by the
+variant that occurs earliest in alphabetical order).  Otherwise, if no "small
+edit" can reach a variant that is spelled correctly, then report failure.
+
+The `correct` program will support three different methods for determining
+whether a "small edit" of a word _w_ can reach a variant that is spelled
+correctly:
+
+* `by_corpus`: The first method is to consider each word _w'_ in the corpus,
+  compute the
+  https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance[Damerau–Levenshtein
+  edit distance] between _w_ and _w'_, and choose the best word _w'_ with edit
+  distance less than or equal to 2.  The disadvantage of this method is that if
+  the corpus is large, then this method will be slow.  The `big.txt` corpus has
+  over 25K words and computing the edit distance between _w_ and _w'_ is
+  __O(|w| * |w'|)__.  Note that this method works with any representation of the
+  corpus (e.g., a
+  https://doc.rust-lang.org/std/collections/struct.HashMap.html[`HashMap`]),
+  although `correct` will use a `TrieMap`.
++
+--
+(5pts) Complete the `dl_edit_dist` function in
+link:./correct/src/lib.rs[`./correct/src/lib.rs`].
+--
+* `by_variants`: The second method is to generate each variant _v'_ that is
+  reachable from _w_ by one or two edit actions and choose the best variant _v'_
+  that is in the corpus.  The disadvantage of this method is that the number of
+  variants _v'_ that are reachable from _w_ by one or two edit actions is large
+  (although it is not necessary to explicitly compute edit distances).  For
+  example, there are over 36K distinct variants that are reachable from "whale"
+  by one or two edit actions.
+* `by_filter`: The third method is to generate _prefixes_ of variants and filter
+  the corpus (represented as a trie); when there are no correctly spelled words
+  in the corpus with a particular prefix, then it is not necessary to generate
+  any of the variants with that prefix.  The "magic" operation is the
+  `next(self: &TreeMap<V>, c: char) -> Option<TrieMap<V>>` method, which
+  determines if the trie contains any keys that begin with `c` and, when it
+  does, returns the subtrie containing exactly those keys.
++
+--
+(10pts) Complete the `by_filter` function in
+link:./correct/src/lib.rs[`./correct/src/lib.rs`].
+
+See below for more details.
+--
+
+### link:./correct/src/main.rs[`correct`] Binary
+
+The `correct` binary performs statistical spelling correction.  The (provided)
+link:./correct/src/main.rs[`./correct/src/main.rs`] handles parsing of command
+line arguments, loading the corpus, and dispatching to the `correct` library to
+suggest corrections using one of the methods described above.
+
+#### Command-Line Arguments and Usage
+
+The `correct` program uses the https://crates.io/crates/clap[`clap`
+(`crates.io`)] library for parsing command line arguments.
+
+....
+$ cargo -q run -- -h
+correct
+Statistical spelling correction
+
+USAGE:
+    correct [OPTIONS] [WORD]...
+
+ARGS:
+    <WORD>...    Words to correct
+
+OPTIONS:
+    -c, --corpus <corpus.txt>    Corpus file [default: ./assets/big.txt]
+    -d, --edit-dist <DIST>       Edit distance [default: 2]
+    -h, --help                   Print help information
+    -m, --method <METHOD>        Correction method [default: by_filter] [possible values: by_corpus, by_variants, by_filter]
+    -s, --stats                  Report allocation and time statistics
+....
+
+It first loads the corpus and initializes the model (associating each word with
+its number of occurrences in the corpus).  Only words in the corpus comprised
+exclusively of ASCII lowercase letters are used.  After loading the corpus and
+initializing the model, it prints a `@` (signalling that the corpus has been
+loaded).
+
+If there are words to correct given on the command line, then each word is
+processed as described below and the `correct` program quits.  If there are no
+words to correct given on the command line, then the `correct` program loops,
+reading from `stdin`:
+
+* If the line is empty (e.g., end-of-stream), then the `correct` program quits.
+* If the line is non-empty, then it is split into words (using
+  https://doc.rust-lang.org/std/primitive.str.html#method.split_ascii_whitespace[`std::str::split_ascii_whitespace`])
+  and each word is processed as decribed below.
+
+The `correct` program processes each word as follows:
+
+* If the word is not comprised exclusively of ASCII lowercase letters, then it prints the word, a space, and `!!` (signalling an invalid word for correction)
+* If the word is a word comprised exclusively of ASCII lowercase letters, then
+** If the word is spelled correctly, then it prints the word, a space, and `--` (signalling a correctly spelled word)
+** If the word is not spelled correctly, then the selected correction method is run and,
+*** If a correction is suggested, then it prints the word, a space, `\=>`, a space, and the suggestion.
+*** If no correction is suggested, then it prints the word, a space, and `??` (signalling an uncorrectable word)
+
+#### Examples
+
+....
+$ cargo -q run -- -s -m by_corpus pizza pepperoni pasta linguine Italy oregano bread
+@
+pizza => dizzy
+pepperoni ??
+pasta => past
+linguine => sanguine
+Italy !!
+oregano => organs
+bread --
+
+allocated    :     141009922 bytes
+deallocated  :     135806696 bytes
+reallocated  :      10894355 bytes
+load time    :  3.0281715280 seconds
+correct time :  6.2105579900 seconds
+....
+
+....
+$ cargo -q run -- -s -m by_variants pizza pepperoni pasta linguine Italy oregano bread
+@
+pizza => dizzy
+pepperoni ??
+pasta => past
+linguine => sanguine
+Italy !!
+oregano => organs
+bread --
+
+allocated    :      58073410 bytes
+deallocated  :      52870184 bytes
+reallocated  :      40549619 bytes
+load time    :  3.0390878960 seconds
+correct time :  1.0626980040 seconds
+....
+
+....
+$ cargo -q run -- -s -m by_filter pizza pepperoni pasta linguine Italy oregano bread
+@
+pizza => dizzy
+pepperoni ??
+pasta => past
+linguine => sanguine
+Italy !!
+oregano => organs
+bread --
+
+allocated    :      13584697 bytes
+deallocated  :       8381471 bytes
+reallocated  :       2750235 bytes
+load time    :  3.0242259240 seconds
+correct time :  0.0396417220 seconds
+....
+
+[subs="+quotes"]
+....
+$ cargo -q run -- -s -m by_filter pizza pepperoni pasta linguine Italy oregano bread
+@
+##pizza##
+pizza => dizzy
+##pepperoni pasta  linguine##
+pepperoni ??
+pasta => past
+linguine => sanguine
+##  Italy  oregano   bread  ##
+Italy !!
+oregano => organs
+bread --
+##rochester institte of techonlogy##
+rochester ??
+institte => institute
+of --
+techonlogy => technology
+
+....
+
+User input is highlighted.
+
+### `by_filter` Method
+
+One way of thinking about the methods for determining whether a "small edit" of
+a word _w_ can reach a variant that is spelled correctly is that they are
+considering all of the words in the intersection of two sets:
+
+* _C_: the set of correctly spelled words in the corpus
+* _E^D^(w)_: the set of all words (correctly spelled or not) whose edit distance from _w_ is at most _D_
+
+The `by_corpus` method considers each word in _C_ and filters by the edit
+distance to the word _w_ (implicitly computing the intersection).
+
+The `by_variants` method explicitly computes _E^D^(w)_ (see the `variants_vec`
+function) and filters by membership in _C_.
+
+The `by_filter` method will also compute the intersection, but without
+explicitly computing the entire set _E^D^(w)_; in particular, by not computing
+any variants with a prefix that is guaranteed to not be in the corpus.
+
+If the corpus is represented by a trie _T_, then __C = _dom_(T)__.  Given a trie
+_T_ and a character _c_, if __T.next(c) = _Some_(T')__, then _T'_ is the subtrie
+whose keys are the keys of _T_ starting with _c_ and with the _c_ removed.  In
+other words, __T'.get(w) = T.get(cw)__ (for all words _w_) and ___dom_(T') =
+{c~1~…c~n~ | cc~1~…c~n~ ∈ _dom_(T)}__.
+
+The next thing to note is that _E^D^(w)_ for some word __w = c~0~c~1~…c~n~__ can
+be defined by induction on _D_ and _w_ based on possible edit actions at the
+start of the word:
+
+* __E^0^(w) = { w }__, because the only word whose edit distance from _w_ is 0 is _w_
+* __E^D^(w)__ (for _D > 0_) equals the union of six sets:
+** __{c'w' | w' ∈ E^D^^-^^1^(c~0~c~1~…c~n~)}__, corresponding to inserting _c'_ before _c~0~_ (note that this is non-empty even if __w = ɛ__ (the empty word))
+** __{c'w' | w' ∈ E^D^^-^^1^(c~1~…c~n~)}__, corresponding to replacing _c~0~_ with _c'_
+** __{c~1~c~0~w' | w' ∈ E^D^^-^^1^(c~2~…c~n~)}__, corresponding to transposing _c~0~_ and _c~1~_
+** __E^D^^-^^1^(c~1~…c~n~)__, corresponding to deleting _c~0~_
+** __{c~0~w' | w' ∈ E^D^(c~1~…c~n~)}__, corresponding to no edit action at the start of the word (and at most _D_ edit actions occuring later)
+** __{ ɛ }__ if __w = ɛ__, corresponding to a word with edit distance strictly less than _D_, or __{ }__ if __w ≠ ɛ__
+
+Now, we can compute the intersection __E^D^(w) ∩ _dom_(T)__ as follows:
+
+* __E^0^(w) ∩ _dom_(T) = { w }__ if __T.contains_key(w)__ and __E^0^(w) ∩ _dom_(T) = { }__ if __!T.contains_key(w)__
+* __E^D^(w) ∩ _dom_(T)__ (for _D > 0_) equals the union of six sets:
+** __{}__ if __T.next(c') = None__ or __{c'w' | w' ∈ E^D^^-^^1^(c~0~c~1~…c~n~) ∩ _dom_(T')}__ if __T.next(c') = Some(T')__, corresponding to inserting _c'_ before _c~0~_
+** __{}__ if __T.next(c') = None__ or __{c'w' | w' ∈ E^D^^-^^1^(c~1~…c~n~) ∩ _dom_(T')}__, corresponding to replacing _c~0~_ with _c'_
+** __{}__ if __T.next(c~1~) = None__, or __{}__ if __T.next(c~1~) = Some(T')__ and __T'.next(c~0~) = None__, or __{c~1~c~0~w' | w' ∈ E^D^^-^^1^(c~2~…c~n~) ∩ _dom_(T'')}__ if __T.next(c~1~) = Some(T')__ and __T'.next(c~0~) = Some(T'')__, corresponding to transposing _c~0~_ and _c~1~_
+** __E^D^^-^^1^(c~1~…c~n~) ∩ _dom_(T')__, corresponding to deleting _c~0~_
+** __{}__ if __T.next(c~0~) = None__ or __{c~0~w' | w' ∈ E^D^(c~1~…c~n~) ∩ _dom_(T')}__ if __T.next(c~0~) = Some(T')__, corresponding to no edit action at the start of the word (and at most _D_ edit actions occuring later).
+** __{ ɛ }__ if __w = ɛ__ and __T.contains_key(ɛ)__, corresponding to a word with edit distance strictly less than _D_, or __{ }__ if __w = ɛ__ and __!T.contains_key(ɛ)__, or __{ }__ if __w ≠ ɛ__
+
+The above can be adapted to a recursive function that determines variants that
+are in the corpus and whose edit distance from _w_ is at most _D_.
+
+#### Example
+
+Here is an example that hopefully illuminates the essence of the `by_filter` method.
+
+Suppose that we wish to find variants of the word __w = ``none``__ with edit
+distance at most _2_ that are found in the trie _T_ with the following
+string/value pairs:
+
+[.center]
+[%autowidth,cols="<5,<5"]
+|===
+| `eight` | 5
+| `five` | 4
+| `four` | 4
+| `nine` | 4
+| `one` | 3
+| `seven` | 5
+| `six` | 3
+| `ten` | 3
+| `three` | 5
+| `two` | 3
+|===
+
+Remember: A trie is an __abstract data type__ representing a map from strings
+(keys) to values.  The concrete implementation of the above trie would have the form
+
+[source,rust]
+----
+let T = TrieMap {
+  len: 10,
+  val: None,
+  children: vec![('e', Te), ('f', Tf), ('n', Tn), ('o', To), ('s', Ts), ('t', Tt)],
+}
+----
+
+Consider each of the kinds of edits that could be made to `none` at the start of the word:
+
+* Insert a character _c' ∈ { `a`, ..., `z` }_ at the beginning of the word.
+  This would then require considering all of the variants of the form
+  ``a__w'__``, ``b__w'__``, …, ``z__w'__`` (where _w'_ is a variant of `none`
+  with edit distance at most 1 ("with edit distance at most 1" because one edit
+  action has been made to insert the character `c'`)) that are found in the trie
+  _T_.  However, by examining the trie, it is immediately obvious that only
+  variants starting with `e`, `f`, `n`, `o`, `s`, or `t` may be found in the
+  trie.
++
+--
+Therefore, it suffices to consider:
+
+* variants of the form ``e__w'__`` where _w'_ is a variant of `none` with edit
+  distance at most 1 found in the trie _T~e~_, where __T.next(`e`) =
+  Some(T~e~)__
+* variants of the form ``f__w'__`` where _w'_ is a variant of `none` with edit
+  distance at most 1 found in the trie _T~f~_, where __T.next(`f`) =
+  Some(T~f~)__
+* variants of the form ``n__w'__`` where _w'_ is a variant of `none` with edit
+  distance at most 1 found in the trie _T~n~_, where __T.next(`n`) =
+  Some(T~n~)__
+* variants of the form ``o__w'__`` where _w'_ is a variant of `none` with edit
+  distance at most 1 found in the trie _T~o~_, where __T.next(`o`) =
+  Some(T~o~)__
+* variants of the form ``t__w'__`` where _w'_ is a variant of `none` with edit
+  distance at most 1 found in the trie _T~t~_, where __T.next(`t`) =
+  Some(T~t~)__
+--
+* Replacing `n` with a character _c' ∈ { `a`, ..., `m`, `o`, ..., `z` }_.  This
+  would then require considering all of the variants of the form ``a__w'__``,
+  ``b__w'__``, …, ``z__w'__`` (where _w'_ is a variant of `one` with edit
+  distance at most 1 ("with edit distance at most 1" because one edit action has
+  been made to replace `n` with the character `c'`)) that are found in the trie
+  _T_.  Again, by examining the trie, it is immediately obvious that only
+  variants starting with `e`, `f`, `n`, `o`, `s`, or `t` may be found in the
+  trie.
++
+--
+Therefore, it suffices to consider:
+
+* variants of the form ``e__w'__`` where _w'_ is a variant of `one` with edit
+  distance at most 1 found in the trie _T~e~_, where __T.next(`e`) =
+  Some(T~e~)__
+* variants of the form ``f__w'__`` where _w'_ is a variant of `one` with edit
+  distance at most 1 found in the trie _T~f~_, where __T.next(`f`) =
+  Some(T~f~)__
+* variants of the form ``n__w'__`` where _w'_ is a variant of `one` with edit
+  distance at most 1 found in the trie _T~n~_, where __T.next(`n`) =
+  Some(T~n~)__
+* variants of the form ``o__w'__`` where _w'_ is a variant of `one` with edit
+  distance at most 1 found in the trie _T~o~_, where __T.next(`o`) =
+  Some(T~o~)__
+* variants of the form ``t__w'__`` where _w'_ is a variant of `one` with edit
+  distance at most 1 found in the trie _T~t~_ (where __T.next(`t`) =
+  Some(T~t~)__
+--
+* Transposing `n` and `o`.  This would then require considering all of the
+  variants of the form ``on__w'__`` (where _w'_ is a variant of `ne` with edit
+  distance at most 1 ("with edit distance at most 1" because one edit action has
+  been made to transpose `n` and `o`)) that are found in the trie _T_.
++
+--
+Therefore, it suffices to consider:
+
+* variants of the form ``no__w'__`` where _w'_ is a variant of `ne` with edit
+  distance at most 1 found in the trie _T'_, where __T.next(`n`) = Some(T~n~)__
+  and __T~n~.next(`o`) = Some(T')__
++
+--
+* Deleting `n`.  This would then require considering all of the variants of the
+  form ``__w'__`` (where _w'_ is a variant of `one` with edit distance at most 1
+  ("with edit distance at most 1" because one edit action has been made to
+  delete `n`)) that are found in the trie _T_.
+* Performing no edit action at the start of the word.  This would then require
+  considering all of the variants of the form ``n__w'__`` (where _w'_ is a
+  variant of `one` with edit distance at most 2 ("with edit distance at most 2"
+  because no edit actions have been made)) that are found in the trie _T_.
++
+--
+Therefore, it suffices to consider:
+
+* variants of the form ``n__w'__`` where _w'_ is a variant of `one` with edit
+  distance at most 2 found in the trie _T~n~_, where __T.next(`n`) =
+  Some(T~n~)__
+--
+
+## Acknowledgements
+
+Based in part on an assignment by Jesse Tov (Northwestern University).
