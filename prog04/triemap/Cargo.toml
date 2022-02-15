@@ -8,4 +8,6 @@ edition = "2021"
 
 [dependencies]
 
-
+[dev-dependencies]
+rand = "0.8.4"
+seq-macro = "0.3.0"
