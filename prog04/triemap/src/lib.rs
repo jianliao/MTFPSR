@@ -371,7 +371,6 @@ impl<V> FusedIterator for IntoIter<V> {
 /// documentation for more.
 ///
 /// [`iter`]: TrieMap::iter
-#[derive(Debug)]
 pub struct IterMut<'a, V> {
     // Your code here
 
@@ -469,7 +468,6 @@ impl<'a, V> IntoIterator for &'a mut TrieMap<V> {
 /// documentation for more.
 ///
 /// [`iter`]: TrieMap::iter
-#[derive(Debug, Clone)]
 pub struct Iter<'a, V> {
     // Your code here
 

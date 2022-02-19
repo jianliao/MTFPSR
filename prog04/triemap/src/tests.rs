@@ -207,18 +207,18 @@ mod next {
         c: char,
     ) {
         let (mk_num, mtm, tm) = mk_mtm_and_tm();
-        let mtm_next_res = mtm.next(c);
-        let tm_next_res = tm.next(c);
+        let mtm_res = mtm.next(c);
+        let tm_res = tm.next(c);
         assert_eq!(
-            tm_next_res.map(TrieMap::check),
-            (&tm_next_res).map(|_| Ok(())),
+            tm_res.map(TrieMap::check),
+            tm_res.map(|_| Ok(())),
             "mk_tm_{:02}().next({}).map(TrieMap::check)",
             mk_num,
             c
         );
         assert_eq!(
-            tm_next_res,
-            (&(mtm_next_res.map(TrieMap::from))).as_ref(),
+            tm_res,
+            mtm_res.map(TrieMap::from).as_ref(),
             "mk_tm_{:02}().next({})",
             mk_num,
             c
@@ -248,13 +248,9 @@ mod get {
         w: &str,
     ) {
         let (mk_num, mtm, tm) = mk_mtm_and_tm();
-        let mtm_get_res = mtm.get(w);
-        let tm_get_res = tm.get(w);
-        assert_eq!(
-            tm_get_res, mtm_get_res,
-            "mk_tm_{:02}().get({:?})",
-            mk_num, w
-        );
+        let mtm_res = mtm.get(w);
+        let tm_res = tm.get(w);
+        assert_eq!(tm_res, mtm_res, "mk_tm_{:02}().get({:?})", mk_num, w);
     }
 
     seq_macro::seq!(N in 00..24 {
@@ -280,17 +276,17 @@ mod get_mut {
         w: &str,
     ) {
         let (mk_num, mut mtm, mut tm) = mk_mtm_and_tm();
-        let mtm_get_mut_res = mtm.get_mut(w);
-        let tm_get_mut_res = tm.get_mut(w);
+        let mtm_res = mtm.get_mut(w);
+        let tm_res = tm.get_mut(w);
         assert_eq!(
-            tm_get_mut_res, mtm_get_mut_res,
+            tm_res, mtm_res,
             "{{ let mut tm = mk_tm_{:02}(); tm.get_mut({:?}) }}",
             mk_num, w
         );
         let mut r = 0;
-        mtm_get_mut_res.map(super::mutate_val(&mut r));
+        mtm_res.map(super::mutate_val(&mut r));
         let mut r = 0;
-        tm_get_mut_res.map(super::mutate_val(&mut r));
+        tm_res.map(super::mutate_val(&mut r));
         assert_eq!(
             tm.check(),
             Ok(()),
@@ -330,10 +326,10 @@ mod insert {
         w: &str,
     ) {
         let (mk_num, mut mtm, mut tm) = mk_mtm_and_tm();
-        let mtm_insert_res = mtm.insert(w, (42, true));
-        let tm_insert_res = tm.insert(w, (42, true));
+        let mtm_res = mtm.insert(w, (42, true));
+        let tm_res = tm.insert(w, (42, true));
         assert_eq!(
-            tm_insert_res, mtm_insert_res,
+            tm_res, mtm_res,
             "{{ let mut tm = mk_tm_{:02}(); tm.insert({:?}, (42, true)) }}",
             mk_num, w
         );
@@ -404,10 +400,10 @@ mod remove {
         w: &str,
     ) {
         let (mk_num, mut mtm, mut tm) = mk_mtm_and_tm();
-        let mtm_remove_res = mtm.remove(w);
-        let tm_remove_res = tm.remove(w);
+        let mtm_res = mtm.remove(w);
+        let tm_res = tm.remove(w);
         assert_eq!(
-            tm_remove_res, mtm_remove_res,
+            tm_res, mtm_res,
             "{{ let mut tm = mk_tm_{:02}(); tm.remove({:?}) }}",
             mk_num, w
         );
@@ -649,7 +645,7 @@ pub mod model {
     use std::ops::Index;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
-    pub struct TrieMap<V>(BTreeMap<String, V>);
+    pub struct TrieMap<V>(pub BTreeMap<String, V>);
 
     impl<V> TrieMap<V> {
         pub fn new() -> Self {
@@ -802,7 +798,7 @@ pub mod model {
         fn from(mbtm: &'a TrieMap<V>) -> Self {
             let len = mbtm.len();
             let val = mbtm.get("").cloned();
-            let mut children_chars = (&mbtm.0)
+            let mut children_chars = (mbtm.0)
                 .keys()
                 .filter_map(|k| k.chars().next())
                 .collect::<Vec<_>>();

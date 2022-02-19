@@ -22,7 +22,9 @@ pub enum Entry<'a, V>
 where
     V: 'a,
 {
+    /// A vacant entry.
     Vacant(VacantEntry<'a, V>),
+    /// An occupied entry.
     Occupied(OccupiedEntry<'a, V>),
 }
 
@@ -173,15 +175,14 @@ impl<'a, V> VacantEntry<'a, V> {
         // Your code here
         unimplemented!()
     }
-    /// Sets the value of the entry with the `VacantEntry`'s key,
-    /// and returns a mutable reference to it.
-    pub fn insert(self, value: V) -> &'a mut V {
+    /// Take ownership of the key.
+    pub fn into_key(self) -> String {
         // Your code here
         unimplemented!()
     }
     /// Sets the value of the entry with the `VacantEntry`'s key,
-    /// and returns an `OccupiedEntry`.
-    fn insert_entry(self, value: V) -> OccupiedEntry<'a, V> {
+    /// and returns a mutable reference to it.
+    pub fn insert(self, value: V) -> &'a mut V {
         // Your code here
         unimplemented!()
     }
