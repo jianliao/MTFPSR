@@ -1,6 +1,8 @@
 use std::iter::{ExactSizeIterator, FromIterator, FusedIterator, Iterator};
 use std::ops::Index;
 
+use serde::{Deserialize, Serialize};
+
 /// A (private) helper function to split a [`&str`] into a first character and a
 /// remaining slice.
 fn str_split_first(s: &str) -> Option<(char, &str)> {
@@ -15,7 +17,7 @@ fn str_split_first(s: &str) -> Option<(char, &str)> {
 /// values.
 ///
 /// See [`https://en.wikipedia.org/wiki/Trie`](https://en.wikipedia.org/wiki/Trie).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TrieMap<V> {
     /// The total number of string/value pairs represented by the `TrieMap`,
     /// including this node and all descendant nodes.

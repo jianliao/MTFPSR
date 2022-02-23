@@ -1,5 +1,5 @@
-use super::super::{tests::*, TrieMap};
 use super::*;
+use crate::tests::*;
 
 // ************************************************************************* //
 // Entry API utils
@@ -102,7 +102,7 @@ where
 
 mod entry {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryKindTrait;
 
@@ -113,7 +113,7 @@ mod entry {
         let (mk_num, mut mtm, mut tm) = mk_mtm_and_tm();
         let mtm_res = mtm.entry(w).kind();
         let tm_res = tm.entry(w).kind();
-        assert_eq!(tm_res, mtm_res, "mk_tm_{:02}().entry({:?})", mk_num, w);
+        assert_eq!(mtm_res, tm_res, "mk_tm_{:02}().entry({:?})", mk_num, w);
     }
 
     seq_macro::seq!(N in 00..24 {
@@ -132,7 +132,7 @@ mod entry {
 
 mod occupied_key {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -147,7 +147,7 @@ mod occupied_key {
             let mtm_res = moe.key();
             let tm_res = oe.key();
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "mk_tm_{:02}().entry({:?}).unwrap_occupied().key()",
                 mk_num, w
             )
@@ -170,7 +170,7 @@ mod occupied_key {
 
 mod occupied_remove_entry {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -185,21 +185,21 @@ mod occupied_remove_entry {
             let mtm_res = moe.remove_entry();
             let tm_res = oe.remove_entry();
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "mk_tm_{:02}().entry({:?}).unwrap_occupied().remove_entry()",
                 mk_num, w
             )
         }
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_occupied().remove_entry(); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_occupied().remove_entry(); tm }}",
             mk_num,
             w
@@ -222,7 +222,7 @@ mod occupied_remove_entry {
 
 mod occupied_get {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -237,7 +237,7 @@ mod occupied_get {
             let mtm_res = moe.get();
             let tm_res = oe.get();
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "mk_tm_{:02}().entry({:?}).unwrap_occupied().get()",
                 mk_num, w
             )
@@ -260,7 +260,7 @@ mod occupied_get {
 
 mod occupied_get_mut {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -275,7 +275,7 @@ mod occupied_get_mut {
             let mtm_res = moe.get_mut();
             let tm_res = oe.get_mut();
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_occupied().get_mut() }}",
                 mk_num, w
             );
@@ -285,15 +285,15 @@ mod occupied_get_mut {
             (super::mutate_val(&mut r))(tm_res);
         };
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_occupied().get_mut()); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_occupied().get_mut()); tm }}",
             mk_num,
             w
@@ -316,7 +316,7 @@ mod occupied_get_mut {
 
 mod occupied_into_mut {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -331,7 +331,7 @@ mod occupied_into_mut {
             let mtm_res = moe.into_mut();
             let tm_res = oe.into_mut();
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_occupied().into_mut() }}",
                 mk_num, w
             );
@@ -346,15 +346,15 @@ mod occupied_into_mut {
             (super::mutate_val(&mut r))(tm_res);
         };
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_occupied().into_mut()); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_occupied().into_mut()); tm }}",
             mk_num,
             w
@@ -377,7 +377,7 @@ mod occupied_into_mut {
 
 mod occupied_insert {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -392,21 +392,21 @@ mod occupied_insert {
             let mtm_res = moe.insert((42, true));
             let tm_res = oe.insert((42, true));
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_occupied().insert((42, true)) }}",
                 mk_num, w
             )
         };
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_occupied().insert((42, true))); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_occupied().insert((42, true))) }}",
             mk_num,
             w
@@ -429,7 +429,7 @@ mod occupied_insert {
 
 mod occupied_remove {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -444,21 +444,21 @@ mod occupied_remove {
             let mtm_res = moe.remove();
             let tm_res = oe.remove();
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "mk_tm_{:02}().entry({:?}).unwrap_occupied().remove()",
                 mk_num, w
             )
         }
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_occupied().remove(); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_occupied().entry(); tm }}",
             mk_num,
             w
@@ -481,7 +481,7 @@ mod occupied_remove {
 
 mod vacant_key {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -496,7 +496,7 @@ mod vacant_key {
             let mtm_res = mve.key();
             let tm_res = ve.key();
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "mk_tm_{:02}().entry({:?}).unwrap_vacant().key()",
                 mk_num, w
             )
@@ -519,7 +519,7 @@ mod vacant_key {
 
 mod vacant_insert {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     use super::EntryTraitForPair;
 
@@ -534,7 +534,7 @@ mod vacant_insert {
             let mtm_res = moe.insert((42, true));
             let tm_res = oe.insert((42, true));
             assert_eq!(
-                tm_res, mtm_res,
+                mtm_res, tm_res,
                 "{{ let mut tm = mk_tm_{:02}(); tm.entry({:?}).unwrap_vacant().insert((42,true)) }}",
                 mk_num, w
             );
@@ -549,15 +549,15 @@ mod vacant_insert {
             (super::mutate_val(&mut r))(tm_res);
         };
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_vacant().insert((42, true))); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; mutate_val(&mut r)(tm.entry({:?}).unwrap_vacant().insert((42, true))); tm.check() }}",
             mk_num,
             w

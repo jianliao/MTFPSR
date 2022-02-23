@@ -1,6 +1,4 @@
 use std::collections::{hash_map::Entry as HashMapEntry, HashMap};
-use std::fs;
-use std::io::{self, BufRead};
 
 use triemap::TrieMap;
 
@@ -46,7 +44,7 @@ impl SearchState {
 }
 
 // ************************************************************************* //
-// `by_corpus` method
+// `by_model` method
 // ************************************************************************* //
 
 /// Computes the [Damerau–Levenshtein
@@ -72,21 +70,21 @@ impl SearchState {
 ///
 /// Hint: `s.chars().collect::<Vec<char>>()` will convert a `&str` to a
 /// `Vec<char>` which will support indexing by a `usize`.
-fn dl_edit_dist(s1: &str, s2: &str) -> usize {
+pub fn dl_edit_dist(s1: &str, s2: &str) -> usize {
     assert!(s1.chars().all(|c| c.is_ascii_lowercase()));
     assert!(s2.chars().all(|c| c.is_ascii_lowercase()));
     // Your code here
     unimplemented!()
 }
 
-/// Consider each word `word_prime` in the corpus, compute the
+/// Consider each word `word_prime` in the model, compute the
 /// (Damerau–Levenshtein edit
 /// distance)[https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance]
 /// between `word` and `word_prime`, and choose the best word `word_prime` with
 /// edit distance less than or equal to `max_edit_dist`.
-pub fn by_corpus(corpus: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Option<String> {
+pub fn by_model(model: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Option<String> {
     let mut state = SearchState::new();
-    for (word_prime, count) in corpus.iter() {
+    for (word_prime, count) in model.iter() {
         let edit_dist = dl_edit_dist(word, &word_prime);
         if edit_dist <= max_edit_dist {
             state.evaluate(&word_prime, *count, edit_dist)
@@ -99,6 +97,13 @@ pub fn by_corpus(corpus: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Opt
 // `by_variants` method
 // ************************************************************************* //
 
+/// Generate each variant `variant` that is reachable from `word` by at most
+/// `max_edit_dist` edit actions and choose the best variant `variant` that is
+/// in the model.
+pub fn by_variants(model: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Option<String> {
+    by_variants1(model, word, max_edit_dist)
+}
+
 /// Enumerates all one-edit-action variants of `word`.
 ///
 /// Because the number of one-edit-action variants of a word can be quite large
@@ -107,7 +112,7 @@ pub fn by_corpus(corpus: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Opt
 /// the caller would simply move each of the variants into another data
 /// structure.  Thus, [`with_one_edit_variants`] takes a `with_variant` callback
 /// closure that it calls with each enumerated one-edit-action variant.  This
-/// callback closure may mov the variant into is own accumulating data
+/// callback closure may move the variant into is own accumulating data
 /// structure.
 ///
 /// Arguably, it might be more idiomatic Rust for this function to return an
@@ -123,13 +128,13 @@ where
     F: FnMut(String),
 {
     const LETTERS: &str = "abcdefghijklmnopqrstuvwxyz";
-    let mut splits: Vec<(&str, &str)> = Vec::new();
-    for (i, _) in word.char_indices() {
-        splits.push((&word[..i], &word[i..]));
-    }
-    splits.push((word, ""));
+    let splits = || {
+        std::iter::once((word, ""))
+            .chain(word.char_indices().map(|(i, _)| (&word[..i], &word[i..])))
+    };
+
     // deletes
-    for (l, r) in splits.iter() {
+    for (l, r) in splits() {
         match str_split_first(r) {
             None => (),
             Some((c0, r)) => match str_split_first(r) {
@@ -144,7 +149,7 @@ where
         }
     }
     // transposes
-    for (l, r) in splits.iter() {
+    for (l, r) in splits() {
         match str_split_first(r) {
             None => (),
             Some((c0, r)) => match str_split_first(r) {
@@ -159,7 +164,7 @@ where
         }
     }
     // replaces
-    for (l, r) in splits.iter() {
+    for (l, r) in splits() {
         match str_split_first(r) {
             None => (),
             Some((c0, r)) => {
@@ -173,7 +178,7 @@ where
         }
     }
     // inserts
-    for (l, r) in splits.iter() {
+    for (l, r) in splits() {
         for c in LETTERS.chars() {
             match str_split_first(r) {
                 None => with_variant(format!("{}{}{}", l, c, r)),
@@ -191,9 +196,57 @@ where
 /// Enumerate all variants of `word` reachable by at most `max_edit_dist` edit
 /// actions.  The variants are enumerated with (upper bounds on) edit distances.
 ///
+/// As with [`with_one_edit_variants`], [`with_edit_variants`] takes a
+/// `with_variant` callback closure that it calls with each enumerated variant.
+///
+/// The callback closure will be invoked with multiple kinds of redundancy.  For
+/// example, the variants of `"whale"` will include `("whaza", 2)` twice,
+/// because it is reachable by one edit action from both `"whala"` `"whaze"`.
+/// In addition, the variants of `"whale"` will include `("whale", 2)` twice,
+/// because it is reachable by one edit action from both `"whala"` `"whaze"`.
+/// This redundancy doesn't affect the "best" variant to correct the word.
+///
+/// We accept the redundancy, because this leads to a faster correction method
+/// than maintaing a unique set of variants.
+fn with_edit_variants<F>(word: &str, max_edit_dist: usize, mut with_variant: F)
+where
+    F: FnMut(String, usize),
+{
+    fn doit<F>(
+        word: &str,
+        e: usize, // number of edits made to word thus far
+        d: usize, // number of edits available to make to word
+        with_variant: &mut F,
+    ) where
+        F: FnMut(String, usize),
+    {
+        with_variant(String::from(word), e);
+        if d > 0 {
+            with_one_edit_variants(word, |s| doit(&s, e + 1, d - 1, with_variant))
+        }
+    }
+
+    doit(word, 0, max_edit_dist, &mut with_variant);
+}
+
+#[allow(dead_code)]
+fn by_variants1(model: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Option<String> {
+    let mut state = SearchState::new();
+    with_edit_variants(word, max_edit_dist, |variant, dist| {
+        match model.get(&variant) {
+            None => (),
+            Some(count) => state.evaluate(&variant, *count, dist),
+        }
+    });
+    state.best()
+}
+
+/// Enumerate all variants of `word` reachable by at most `max_edit_dist` edit
+/// actions.  The variants are enumerated with (upper bounds on) edit distances.
+///
 /// This function accumulates all variants in a vector, allowing for multiple
 /// kinds of redundancy.  For example, the variants of `"whale"` will include
-/// `("whaza",2)` twice, because it is reachable by one edit action from both
+/// `("whaza", 2)` twice, because it is reachable by one edit action from both
 /// `"whala"` `"whaze"`.  In addition, the variants of `"whale"` will include
 /// `("whale", 2)` twice, because it is reachable by one edit action from both
 /// `"whala"` `"whaze"`.  This redundancy doesn't affect the "best" variant to
@@ -201,8 +254,9 @@ where
 ///
 /// We accept the redundancy, because this leads to a faster correction method
 /// than maintaing a unique set of variants.  Try replacing `variants_vec` in
-/// `by_variants` with `unique_variants_hashmap` or
+/// `by_variants2` with `unique_variants_hashmap` or
 /// `unique_variants_trie` and compare the running times.
+#[allow(dead_code)]
 fn variants_vec(word: &str, max_edit_dist: usize) -> impl Iterator<Item = (String, usize)> {
     let mut res: Vec<(String, usize)> = vec![];
     let mut last = vec![String::from(word)];
@@ -285,13 +339,11 @@ fn unique_variants_triemap(
     res.into_iter()
 }
 
-/// Generate each variant `variant` that is reachable from `word` by at most
-/// `max_edit_dist` edit actions and choose the best variant `variant` that is
-/// in the corpus.
-pub fn by_variants(corpus: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Option<String> {
+#[allow(dead_code)]
+fn by_variants2(model: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Option<String> {
     let mut state = SearchState::new();
     for (variant, dist) in variants_vec(word, max_edit_dist) {
-        match corpus.get(&variant) {
+        match model.get(&variant) {
             None => (),
             Some(count) => state.evaluate(&variant, *count, dist),
         }
@@ -303,42 +355,21 @@ pub fn by_variants(corpus: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> O
 // `by_filter` method
 // ************************************************************************* //
 
-/// Generates _prefixes_ of variants and filters the corpus (represented as a
-/// trie); when there are no correctly spelled words in the corpus with a
+/// Generates _prefixes_ of variants and filters the model (represented as a
+/// trie); when there are no correctly spelled words in the model with a
 /// particular prefix, then it is not necessary to generate any of the variants
 /// with that prefix.
-pub fn by_filter(corpus: &TrieMap<u64>, word: &str, max_edit_dist: usize) -> Option<String> {
+pub fn by_filter(_model: &TrieMap<u64>, _word: &str, _max_edit_dist: usize) -> Option<String> {
     // Your code here
     unimplemented!()
 }
 
 // ************************************************************************* //
-// load_corpus_from_text
+// load & save
 // ************************************************************************* //
 
-// Load corpus and initialize the model
-pub fn load_corpus_from_text(corpus_file_name: &str) -> Result<TrieMap<u64>, std::io::Error> {
-    let mut corpus: TrieMap<u64> = TrieMap::new();
-    let corpus_file = fs::File::open(corpus_file_name)?;
-    for line in io::BufReader::new(corpus_file).lines() {
-        for word in line?.split_whitespace() {
-            // Discard leading and trailing symbols;
-            // e.g., ",respectively." ==> "respectively"
-            let word = word.trim_matches(|c: char| !c.is_alphabetic());
-            // Skip words that are not ASCII lowercase;
-            // e.g., "Matthew" (proper names)
-            if !word.is_empty() && word.chars().all(|c| c.is_ascii_lowercase()) {
-                match corpus.get_mut(word) {
-                    None => {
-                        corpus.insert(word, 1);
-                    }
-                    Some(n) => *n += 1,
-                }
-            }
-        }
-    }
-    Ok(corpus)
-}
+pub mod load;
+pub mod save;
 
 // ************************************************************************* //
 // tests

@@ -1,4 +1,4 @@
-pub use super::TrieMap;
+pub use crate::TrieMap;
 
 // ************************************************************************* //
 // check
@@ -173,15 +173,15 @@ pub fn mutate_key_val(r: &mut usize) -> impl FnMut((String, &mut (usize, bool)))
 
 mod new {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     #[test]
     fn test() {
         let mtm = ModelTrieMap::<(usize, bool)>::new();
         let tm = TrieMap::<(usize, bool)>::new();
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "({}).check()",
             "TrieMap::<(usize,bool)>::new()"
         );
@@ -195,7 +195,7 @@ mod new {
 
 mod next {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     const NUM_NEXT_CHARS: usize = 17;
     const NEXT_CHARS: [char; NUM_NEXT_CHARS] = [
@@ -210,15 +210,15 @@ mod next {
         let mtm_res = mtm.next(c);
         let tm_res = tm.next(c);
         assert_eq!(
-            tm_res.map(TrieMap::check),
             tm_res.map(|_| Ok(())),
+            tm_res.map(TrieMap::check),
             "mk_tm_{:02}().next({}).map(TrieMap::check)",
             mk_num,
             c
         );
         assert_eq!(
-            tm_res,
             mtm_res.map(TrieMap::from).as_ref(),
+            tm_res,
             "mk_tm_{:02}().next({})",
             mk_num,
             c
@@ -241,7 +241,7 @@ mod next {
 
 mod get {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     fn mk_test(
         mk_mtm_and_tm: impl FnOnce() -> (usize, ModelTrieMap<(usize, bool)>, TrieMap<(usize, bool)>),
@@ -250,7 +250,7 @@ mod get {
         let (mk_num, mtm, tm) = mk_mtm_and_tm();
         let mtm_res = mtm.get(w);
         let tm_res = tm.get(w);
-        assert_eq!(tm_res, mtm_res, "mk_tm_{:02}().get({:?})", mk_num, w);
+        assert_eq!(mtm_res, tm_res, "mk_tm_{:02}().get({:?})", mk_num, w);
     }
 
     seq_macro::seq!(N in 00..24 {
@@ -269,7 +269,7 @@ mod get {
 
 mod get_mut {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     fn mk_test(
         mk_mtm_and_tm: impl FnOnce() -> (usize, ModelTrieMap<(usize, bool)>, TrieMap<(usize, bool)>),
@@ -279,7 +279,7 @@ mod get_mut {
         let mtm_res = mtm.get_mut(w);
         let tm_res = tm.get_mut(w);
         assert_eq!(
-            tm_res, mtm_res,
+            mtm_res, tm_res,
             "{{ let mut tm = mk_tm_{:02}(); tm.get_mut({:?}) }}",
             mk_num, w
         );
@@ -288,15 +288,15 @@ mod get_mut {
         let mut r = 0;
         tm_res.map(super::mutate_val(&mut r));
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; tm.get_mut({:?}).map(mutate_val(&mut r)); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); let mut r = 0; tm.get_mut({:?}).map(mutate_val(&mut r)); tm }}",
             mk_num,
             w
@@ -319,7 +319,7 @@ mod get_mut {
 
 mod insert {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     fn mk_one_test(
         mk_mtm_and_tm: impl FnOnce() -> (usize, ModelTrieMap<(usize, bool)>, TrieMap<(usize, bool)>),
@@ -329,20 +329,20 @@ mod insert {
         let mtm_res = mtm.insert(w, (42, true));
         let tm_res = tm.insert(w, (42, true));
         assert_eq!(
-            tm_res, mtm_res,
+            mtm_res, tm_res,
             "{{ let mut tm = mk_tm_{:02}(); tm.insert({:?}, (42, true)) }}",
             mk_num, w
         );
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); tm.insert({:?}, (42, true)); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); tm.insert({:?}, (42, true)); tm }}",
             mk_num,
             w
@@ -371,12 +371,18 @@ mod insert {
         for w in super::shuffled_seed_words(541).into_iter().take(n) {
             tm.insert(w, w.len() % 3 == 0);
         }
-        assert_eq!(tm.check(), Ok(()),
-                   "{{ let mut tm: TrieMap<bool> = TrieMap::new(); for w in shuffled_seed_words(541).into_iter().take({}) {{ tm.insert(w, w.len() % 3 == 0); }}; tm.check() }}",
-                   n);
-        assert_eq!(tm, TrieMap::from(mtm),
-                   "{{ let mut tm: TrieMap< bool> = TrieMap::new(); for w in shuffled_seed_words(541).into_iter().take({}) {{ tm.insert(w, w.len() % 3 == 0); }}; tm }}",
-                   n);
+        assert_eq!(
+            tm.check(),
+            Ok(()),
+            "{{ let mut tm: TrieMap<bool> = TrieMap::new(); for w in shuffled_seed_words(541).into_iter().take({}) {{ tm.insert(w, w.len() % 3 == 0); }}; tm.check() }}",
+            n
+        );
+        assert_eq!(
+            TrieMap::from(mtm),
+            tm,
+            "{{ let mut tm: TrieMap< bool> = TrieMap::new(); for w in shuffled_seed_words(541).into_iter().take({}) {{ tm.insert(w, w.len() % 3 == 0); }}; tm }}",
+            n
+        );
     }
 
     seq_macro::seq!(N in 00..24 {
@@ -393,7 +399,7 @@ mod insert {
 
 mod remove {
     use super::model::TrieMap as ModelTrieMap;
-    use super::TrieMap;
+    use crate::TrieMap;
 
     fn mk_one_test(
         mk_mtm_and_tm: impl FnOnce() -> (usize, ModelTrieMap<(usize, bool)>, TrieMap<(usize, bool)>),
@@ -403,20 +409,20 @@ mod remove {
         let mtm_res = mtm.remove(w);
         let tm_res = tm.remove(w);
         assert_eq!(
-            tm_res, mtm_res,
+            mtm_res, tm_res,
             "{{ let mut tm = mk_tm_{:02}(); tm.remove({:?}) }}",
             mk_num, w
         );
         assert_eq!(
-            tm.check(),
             Ok(()),
+            tm.check(),
             "{{ let mut tm = mk_tm_{:02}(); tm.remove({:?}); tm.check() }}",
             mk_num,
             w
         );
         assert_eq!(
-            tm,
             TrieMap::from(&mtm),
+            tm,
             "{{ let mut tm = mk_tm_{:02}(); tm.remove({:?}); tm }}",
             mk_num,
             w
@@ -439,12 +445,18 @@ mod remove {
         for w in super::shuffled_all_words(641) {
             tm.remove(w);
         }
-        assert_eq!(tm.check(), Ok(()),
-                   "{{ let mut tm = mk_tm_{:02}(); for w in shuffled_all_words(641) {{ tm.iremove(w); }}; tm.check() }}",
-                   mk_num);
-        assert_eq!(tm, TrieMap::new(),
-                   "{{ let mut tm = mk_tm_{:02}(); for w in shuffled_all_words(641) {{ tm.iremove(w); }}; tm }}",
-                   mk_num);
+        assert_eq!(
+            Ok(()),
+            tm.check(),
+            "{{ let mut tm = mk_tm_{:02}(); for w in shuffled_all_words(641) {{ tm.iremove(w); }}; tm.check() }}",
+            mk_num
+        );
+        assert_eq!(
+            TrieMap::new(),
+            tm,
+            "{{ let mut tm = mk_tm_{:02}(); for w in shuffled_all_words(641) {{ tm.iremove(w); }}; tm }}",
+            mk_num
+        );
     }
 
     seq_macro::seq!(N in 00..24 {
@@ -464,9 +476,9 @@ mod into_iter {
         #[test]
         fn count_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.into_iter().count();
-            let r2 = mtm.into_iter().count();
-            assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().count()", mk_num)
+            let mres = mtm.into_iter().count();
+            let res = tm.into_iter().count();
+            assert_eq!(mres, res, "mk_tm_{:02}().into_iter().count()", mk_num)
         }
     });
 
@@ -476,9 +488,9 @@ mod into_iter {
         fn nth_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.into_iter().nth(n);
-                let r2 = mtm.into_iter().nth(n);
-                assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().nth({})", mk_num, n)
+                let mres = mtm.into_iter().nth(n);
+                let res = tm.into_iter().nth(n);
+                assert_eq!(mres, res, "mk_tm_{:02}().into_iter().nth({})", mk_num, n)
             }
         }
     });
@@ -487,9 +499,9 @@ mod into_iter {
         #[test]
         fn collect_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.into_iter().collect::<Vec<_>>();
-            let r2 = mtm.into_iter().collect::<Vec<_>>();
-            assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().collect::<Vec<_>>()", mk_num)
+            let mres = mtm.into_iter().collect::<Vec<_>>();
+            let res = tm.into_iter().collect::<Vec<_>>();
+            assert_eq!(mres, res, "mk_tm_{:02}().into_iter().collect::<Vec<_>>()", mk_num)
         }
     });
 
@@ -499,9 +511,9 @@ mod into_iter {
         fn size_hint_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.into_iter().skip(n).size_hint();
-                let r2 = mtm.into_iter().skip(n).size_hint();
-                assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().skip({}).size_hint()", mk_num, n)
+                let mres = mtm.into_iter().skip(n).size_hint();
+                let res = tm.into_iter().skip(n).size_hint();
+                assert_eq!(mres, res, "mk_tm_{:02}().into_iter().skip({}).size_hint()", mk_num, n)
             }
         }
     });
@@ -516,9 +528,9 @@ mod iter_mut {
         #[test]
         fn count_test~N() {
             let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter_mut().count();
-            let r2 = mtm.iter_mut().count();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().count()", mk_num)
+            let mres = mtm.iter_mut().count();
+            let res = tm.iter_mut().count();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().count()", mk_num)
         }
     });
 
@@ -528,9 +540,9 @@ mod iter_mut {
         fn nth_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter_mut().nth(n);
-                let r2 = mtm.iter_mut().nth(n);
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().nth({})", mk_num, n)
+                let mres = mtm.iter_mut().nth(n);
+                let res = tm.iter_mut().nth(n);
+                assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().nth({})", mk_num, n)
             }
         }
     });
@@ -539,9 +551,9 @@ mod iter_mut {
         #[test]
         fn collect_test~N() {
             let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter_mut().collect::<Vec<_>>();
-            let r2 = mtm.iter_mut().collect::<Vec<_>>();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().collect::<Vec<_>>()", mk_num)
+            let mres = mtm.iter_mut().collect::<Vec<_>>();
+            let res = tm.iter_mut().collect::<Vec<_>>();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().collect::<Vec<_>>()", mk_num)
         }
     });
 
@@ -551,9 +563,9 @@ mod iter_mut {
         fn size_hint_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter_mut().skip(n).size_hint();
-                let r2 = mtm.iter_mut().skip(n).size_hint();
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().skip({}).size_hint()", mk_num, n)
+                let mres = mtm.iter_mut().skip(n).size_hint();
+                let res = tm.iter_mut().skip(n).size_hint();
+                assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().skip({}).size_hint()", mk_num, n)
             }
         }
     });
@@ -568,14 +580,14 @@ mod iter_mut {
             let mut r = 0;
             mtm.iter_mut().for_each(super::mutate_key_val(&mut r));
             assert_eq!(
-                tm.check(),
                 Ok(()),
+                tm.check(),
                 "{{ let mut tm = mk_tm_{:02}(); let r = 0; tm.iter_mut().for_each(mutate_key_val(&mut r)); tm.check() }}",
                 mk_num
             );
             assert_eq!(
+                crate::TrieMap::from(&mtm),
                 tm,
-                super::TrieMap::from(&mtm),
                 "{{ let mut tm = mk_tm_{:02}(); let r = 0; tm.iter_mut().for_each(mutate_key_val(&mut r)); tm }}",
                 mk_num
             );
@@ -592,9 +604,9 @@ mod iter {
         #[test]
         fn count_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter().count();
-            let r2 = mtm.iter().count();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter().count()", mk_num)
+            let mres = mtm.iter().count();
+            let res = tm.iter().count();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter().count()", mk_num)
         }
     });
 
@@ -604,9 +616,9 @@ mod iter {
         fn nth_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter().nth(n);
-                let r2 = mtm.iter().nth(n);
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter().nth({})", mk_num, n)
+                let mres = mtm.iter().nth(n);
+                let res = tm.iter().nth(n);
+                assert_eq!(mres, res, "mk_tm_{:02}().iter().nth({})", mk_num, n)
             }
         }
     });
@@ -615,9 +627,9 @@ mod iter {
         #[test]
         fn collect_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter().collect::<Vec<_>>();
-            let r2 = mtm.iter().collect::<Vec<_>>();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter().collect::<Vec<_>>()", mk_num)
+            let mres = mtm.iter().collect::<Vec<_>>();
+            let res = tm.iter().collect::<Vec<_>>();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter().collect::<Vec<_>>()", mk_num)
         }
     });
 
@@ -627,9 +639,9 @@ mod iter {
         fn size_hint_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter().skip(n).size_hint();
-                let r2 = mtm.iter().skip(n).size_hint();
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter().skip({}).size_hint()", mk_num, n)
+                let mres = mtm.iter().skip(n).size_hint();
+                let res = tm.iter().skip(n).size_hint();
+                assert_eq!(mres, res, "mk_tm_{:02}().iter().skip({}).size_hint()", mk_num, n)
             }
         }
     });
@@ -794,7 +806,7 @@ pub mod model {
         }
     }
 
-    impl<'a, V: Clone> From<&'a TrieMap<V>> for super::TrieMap<V> {
+    impl<'a, V: Clone> From<&'a TrieMap<V>> for crate::TrieMap<V> {
         fn from(mbtm: &'a TrieMap<V>) -> Self {
             let len = mbtm.len();
             let val = mbtm.get("").cloned();
@@ -805,15 +817,15 @@ pub mod model {
             children_chars.dedup();
             let children = children_chars
                 .into_iter()
-                .filter_map(|c| mbtm.next(c).map(|mbtm| (c, super::TrieMap::from(mbtm))))
+                .filter_map(|c| mbtm.next(c).map(|mbtm| (c, crate::TrieMap::from(mbtm))))
                 .collect();
-            super::TrieMap { len, val, children }
+            crate::TrieMap { len, val, children }
         }
     }
 
-    impl<V: Clone> From<TrieMap<V>> for super::TrieMap<V> {
+    impl<V: Clone> From<TrieMap<V>> for crate::TrieMap<V> {
         fn from(mbtm: TrieMap<V>) -> Self {
-            super::TrieMap::from(&mbtm)
+            crate::TrieMap::from(&mbtm)
         }
     }
 

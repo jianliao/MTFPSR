@@ -62,7 +62,7 @@ from the `__ritid__psr` directory.
 This project is organized as a workspace containing two crates:
 
 * link:./triemap[`triemap`] (library crate): A library for https://en.wikipedia.org/wiki/Trie[tries] (also called digital trees or prefix trees); defines the `TrieMap<V>` type, which maps strings to values
-* `correct` (library and binary crates): A statistical spelling correction program; uses the `triemap` crate
+* link:./correct[`correct`] (library and binary crates): A statistical spelling correction program; uses the `triemap` crate
 
 ## `trie` (library crate)
 
@@ -209,13 +209,13 @@ http://norvig.com/spell-correct.html[an idea of Peter Norvig].
 The purpose of the `correct` program is to find possible corrections for
 misspelled words.  It works in two phases.
 
-In the first phase, it loads a corpus of words (presumed to be correctly
-spelled) and builds a model that associates each word with its number of
-occurrences in the corpus.
+In the first phase, it loads a model mapping words to weights.  One method is to
+load a corpus of words (presumed to be correctly spelled) and build a model that
+associates each word with its number of occurrences in the corpus.
 
 In the second phase, it uses the model to check individual words.  In
 particular, it checks whether a word is spelled correctly according to the model
-(i.e., the word exists in the corpus) and, if not, whether a "small edit" can
+(i.e., the word exists in the model) and, if not, whether a "small edit" can
 reach a variant that is spelled correctly.
 
 Norvig suggest that a "small edit" is the application of one edit action
@@ -228,11 +228,11 @@ the first, where an edit action is one of the following:
 * the insertion of one letter at any position
 
 If there exist variants reachable by one edit action that are spelled correctly,
-then suggest the one appearing most frequently in the corpus (breaking ties by
-the variant that occurs earliest in alphabetical order).  If there do not exist
+then suggest the one with the greatest weight in the model (breaking ties by the
+variant that occurs earliest in alphabetical order).  If there do not exist
 variants reachable by one edit action that are spelled correctly but there do
 exist variants reachable by two edit actions that are spelled correctly, then
-suggest the one appearing most frequently in the corpus (breaking ties by the
+suggest the one with the greatest weight in the model (breaking ties by the
 variant that occurs earliest in alphabetical order).  Otherwise, if no "small
 edit" can reach a variant that is spelled correctly, then report failure.
 
@@ -240,15 +240,15 @@ The `correct` program will support three different methods for determining
 whether a "small edit" of a word _w_ can reach a variant that is spelled
 correctly:
 
-* `by_corpus`: The first method is to consider each word _w'_ in the corpus,
+* `by_model`: The first method is to consider each word _w'_ in the model,
   compute the
   https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance[Damerau–Levenshtein
   edit distance] between _w_ and _w'_, and choose the best word _w'_ with edit
   distance less than or equal to 2.  The disadvantage of this method is that if
-  the corpus is large, then this method will be slow.  The `big.txt` corpus has
+  the model is large, then this method will be slow.  The `big.txt` corpus has
   over 25K words and computing the edit distance between _w_ and _w'_ is
   __O(|w| * |w'|)__.  Note that this method works with any representation of the
-  corpus (e.g., a
+  model (e.g., a
   https://doc.rust-lang.org/std/collections/struct.HashMap.html[`HashMap`]),
   although `correct` will use a `TrieMap`.
 +
@@ -258,14 +258,14 @@ link:./correct/src/lib.rs[`./correct/src/lib.rs`].
 --
 * `by_variants`: The second method is to generate each variant _v'_ that is
   reachable from _w_ by one or two edit actions and choose the best variant _v'_
-  that is in the corpus.  The disadvantage of this method is that the number of
+  that is in the model.  The disadvantage of this method is that the number of
   variants _v'_ that are reachable from _w_ by one or two edit actions is large
   (although it is not necessary to explicitly compute edit distances).  For
   example, there are over 36K distinct variants that are reachable from "whale"
   by one or two edit actions.
 * `by_filter`: The third method is to generate _prefixes_ of variants and filter
-  the corpus (represented as a trie); when there are no correctly spelled words
-  in the corpus with a particular prefix, then it is not necessary to generate
+  the model (represented as a trie); when there are no correctly spelled words
+  in the model with a particular prefix, then it is not necessary to generate
   any of the variants with that prefix.  The "magic" operation is the
   `next(self: &TreeMap<V>, c: char) -> Option<TrieMap<V>>` method, which
   determines if the trie contains any keys that begin with `c` and, when it
@@ -282,7 +282,7 @@ See below for more details.
 
 The `correct` binary performs statistical spelling correction.  The (provided)
 link:./correct/src/main.rs[`./correct/src/main.rs`] handles parsing of command
-line arguments, loading the corpus, and dispatching to the `correct` library to
+line arguments, loading the model, and dispatching to the `correct` library to
 suggest corrections using one of the methods described above.
 
 #### Command-Line Arguments and Usage
@@ -292,7 +292,7 @@ The `correct` program uses the https://crates.io/crates/clap[`clap`
 
 ....
 $ cargo -q run -- -h
-correct
+correct 
 Statistical spelling correction
 
 USAGE:
@@ -302,18 +302,27 @@ ARGS:
     <WORD>...    Words to correct
 
 OPTIONS:
-    -c, --corpus <corpus.txt>    Corpus file [default: ./assets/big.txt]
-    -d, --edit-dist <DIST>       Edit distance [default: 2]
-    -h, --help                   Print help information
-    -m, --method <METHOD>        Correction method [default: by_filter] [possible values: by_corpus, by_variants, by_filter]
-    -s, --stats                  Report allocation and time statistics
+    -d, --edit-dist <DIST>
+            Edit distance [default: 2]
+
+    -h, --help
+            Print help information
+
+    -l, --load <corpus.txt|model.btc.z>
+            Load file [default: ./assets/big_model.btc.z]
+
+    -m, --method <METHOD>
+            Correction method [default: by_filter] [possible values: by_model, by_variants, by_filter]
+
+    -s, --stats
+            Report allocation and time statistics
 ....
 
-It first loads the corpus and initializes the model (associating each word with
-its number of occurrences in the corpus).  Only words in the corpus comprised
-exclusively of ASCII lowercase letters are used.  After loading the corpus and
-initializing the model, it prints a `@` (signalling that the corpus has been
-loaded).
+It first loads the model, either from a corpus (`corpus.txt`) or directly from a
+serialized model (`model.btc.z`).  When loading from a corpus, only words in the
+corpus comprised exclusively of ASCII lowercase letters are used and each word
+is associated with its number of occurrences in the corpus.  After loading the
+model, it prints a `@` (signalling that the model has been loaded).
 
 If there are words to correct given on the command line, then each word is
 processed as described below and the `correct` program quits.  If there are no
@@ -337,7 +346,7 @@ The `correct` program processes each word as follows:
 #### Examples
 
 ....
-$ cargo -q run -- -s -m by_corpus pizza pepperoni pasta linguine Italy oregano bread
+$ cargo -q run -- -s -m by_model pizza pepperoni pasta linguine Italy oregano bread
 @
 pizza => dizzy
 pepperoni ??
@@ -347,11 +356,11 @@ Italy !!
 oregano => organs
 bread --
 
-allocated    :     141009922 bytes
-deallocated  :     135806696 bytes
-reallocated  :      10894355 bytes
-load time    :  3.0281715280 seconds
-correct time :  6.2105579900 seconds
+allocated    :     131366914 bytes
+deallocated  :     127517200 bytes
+reallocated  :       8148728 bytes
+load time    :  0.6786798380 seconds
+correct time :  6.3515902120 seconds
 ....
 
 ....
@@ -365,11 +374,11 @@ Italy !!
 oregano => organs
 bread --
 
-allocated    :      58073410 bytes
-deallocated  :      52870184 bytes
-reallocated  :      40549619 bytes
-load time    :  3.0390878960 seconds
-correct time :  1.0626980040 seconds
+allocated    :      48430404 bytes
+deallocated  :      44580690 bytes
+reallocated  :      37803992 bytes
+load time    :  0.6729023700 seconds
+correct time :  1.1249478820 seconds
 ....
 
 ....
@@ -383,16 +392,16 @@ Italy !!
 oregano => organs
 bread --
 
-allocated    :      13584697 bytes
-deallocated  :       8381471 bytes
-reallocated  :       2750235 bytes
-load time    :  3.0242259240 seconds
-correct time :  0.0396417220 seconds
+allocated    :       3941691 bytes
+deallocated  :         91977 bytes
+reallocated  :          4608 bytes
+load time    :  0.6758438720 seconds
+correct time :  0.0442530020 seconds
 ....
 
 [subs="+quotes"]
 ....
-$ cargo -q run -- -s -m by_filter pizza pepperoni pasta linguine Italy oregano bread
+$ cargo -q run --
 @
 ##pizza##
 pizza => dizzy
@@ -420,20 +429,20 @@ One way of thinking about the methods for determining whether a "small edit" of
 a word _w_ can reach a variant that is spelled correctly is that they are
 considering all of the words in the intersection of two sets:
 
-* _C_: the set of correctly spelled words in the corpus
+* _M_: the set of correctly spelled words in the model
 * _E^D^(w)_: the set of all words (correctly spelled or not) whose edit distance from _w_ is at most _D_
 
-The `by_corpus` method considers each word in _C_ and filters by the edit
+The `by_model` method considers each word in _M_ and filters by the edit
 distance to the word _w_ (implicitly computing the intersection).
 
 The `by_variants` method explicitly computes _E^D^(w)_ (see the `variants_vec`
-function) and filters by membership in _C_.
+function) and filters by membership in _M_.
 
 The `by_filter` method will also compute the intersection, but without
 explicitly computing the entire set _E^D^(w)_; in particular, by not computing
-any variants with a prefix that is guaranteed to not be in the corpus.
+any variants with a prefix that is guaranteed to not be in the model.
 
-If the corpus is represented by a trie _T_, then __C = _dom_(T)__.  Given a trie
+If the model is represented by a trie _T_, then __M = _dom_(T)__.  Given a trie
 _T_ and a character _c_, if __T.next(c) = _Some_(T')__, then _T'_ is the subtrie
 whose keys are the keys of _T_ starting with _c_ and with the _c_ removed.  In
 other words, __T'.get(w) = T.get(cw)__ (for all words _w_) and ___dom_(T') =
@@ -464,7 +473,7 @@ Now, we can compute the intersection __E^D^(w) ∩ _dom_(T)__ as follows:
 ** __{ ɛ }__ if __w = ɛ__ and __T.contains_key(ɛ)__, corresponding to a word with edit distance strictly less than _D_, or __{ }__ if __w = ɛ__ and __!T.contains_key(ɛ)__, or __{ }__ if __w ≠ ɛ__
 
 The above can be adapted to a recursive function that determines variants that
-are in the corpus and whose edit distance from _w_ is at most _D_.
+are in the model and whose edit distance from _w_ is at most _D_.
 
 #### Example
 

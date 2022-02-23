@@ -1,6 +1,6 @@
 use rand::{Rng, SeedableRng};
 
-pub use super::super::TrieMap;
+use crate::TrieMap;
 
 use super::super::tests::*;
 
@@ -58,9 +58,9 @@ mod de_into_iter {
         #[test]
         fn rev_count_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.into_iter().rev().count();
-            let r2 = mtm.into_iter().rev().count();
-            assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().rev().count()", mk_num)
+            let mres = mtm.into_iter().rev().count();
+            let res = tm.into_iter().rev().count();
+            assert_eq!(mres, res, "mk_tm_{:02}().into_iter().rev().count()", mk_num)
         }
     });
 
@@ -70,9 +70,9 @@ mod de_into_iter {
         fn rev_nth_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.into_iter().rev().nth(n);
-                let r2 = mtm.into_iter().rev().nth(n);
-                assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().rev().nth({})", mk_num, n)
+                let mres = mtm.into_iter().rev().nth(n);
+                let res = tm.into_iter().rev().nth(n);
+                assert_eq!(mres, res, "mk_tm_{:02}().into_iter().rev().nth({})", mk_num, n)
             }
         }
     });
@@ -81,9 +81,9 @@ mod de_into_iter {
         #[test]
         fn rev_collect_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.into_iter().rev().collect::<Vec<_>>();
-            let r2 = mtm.into_iter().rev().collect::<Vec<_>>();
-            assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().rev().collect::<Vec<_>>()", mk_num)
+            let mres = mtm.into_iter().rev().collect::<Vec<_>>();
+            let res = tm.into_iter().rev().collect::<Vec<_>>();
+            assert_eq!(mres, res, "mk_tm_{:02}().into_iter().rev().collect::<Vec<_>>()", mk_num)
         }
     });
 
@@ -93,9 +93,9 @@ mod de_into_iter {
         fn rev_size_hint_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.into_iter().rev().skip(n).size_hint();
-                let r2 = mtm.into_iter().rev().skip(n).size_hint();
-                assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().rev().skip({}).size_hint()", mk_num, n)
+                let mres = mtm.into_iter().rev().skip(n).size_hint();
+                let res = tm.into_iter().rev().skip(n).size_hint();
+                assert_eq!(mres, res, "mk_tm_{:02}().into_iter().rev().skip({}).size_hint()", mk_num, n)
             }
         }
     });
@@ -106,9 +106,9 @@ mod de_into_iter {
             for bias in super::BIASES {
                 for seed in super::SEEDS {
                     let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                    let r1 = tm.into_iter().bias(bias, seed).count();
-                    let r2 = mtm.into_iter().bias(bias, seed).count();
-                    assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().bias({}, {}).count()", mk_num, bias, seed)
+                    let mres = mtm.into_iter().bias(bias, seed).count();
+                    let res = tm.into_iter().bias(bias, seed).count();
+                    assert_eq!(mres, res, "mk_tm_{:02}().into_iter().bias({}, {}).count()", mk_num, bias, seed)
                 }
             }
         }
@@ -122,9 +122,9 @@ mod de_into_iter {
                 for seed in super::SEEDS {
                     for n in 0..N+1 {
                         let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                        let r1 = tm.into_iter().bias(bias, seed).nth(n);
-                        let r2 = mtm.into_iter().bias(bias, seed).nth(n);
-                        assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().bias({}, {}).nth({})", mk_num, bias, seed, n)
+                        let mres = mtm.into_iter().bias(bias, seed).nth(n);
+                        let res = tm.into_iter().bias(bias, seed).nth(n);
+                        assert_eq!(mres, res, "mk_tm_{:02}().into_iter().bias({}, {}).nth({})", mk_num, bias, seed, n)
                     }
                 }
             }
@@ -137,9 +137,9 @@ mod de_into_iter {
             for bias in super::BIASES {
                 for seed in super::SEEDS {
                     let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                    let r1 = tm.into_iter().bias(bias, seed).collect::<Vec<_>>();
-                    let r2 = mtm.into_iter().bias(bias, seed).collect::<Vec<_>>();
-                    assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().bias({}, {}).collect::<Vec<_>>()", mk_num, bias, seed)
+                    let mres = mtm.into_iter().bias(bias, seed).collect::<Vec<_>>();
+                    let res = tm.into_iter().bias(bias, seed).collect::<Vec<_>>();
+                    assert_eq!(mres, res, "mk_tm_{:02}().into_iter().bias({}, {}).collect::<Vec<_>>()", mk_num, bias, seed)
                 }
             }
         }
@@ -153,9 +153,9 @@ mod de_into_iter {
                 for seed in super::SEEDS {
                     for n in 0..N+1 {
                         let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                        let r1 = tm.into_iter().bias(bias, seed).skip(n).size_hint();
-                        let r2 = mtm.into_iter().bias(bias, seed).skip(n).size_hint();
-                        assert_eq!(r1, r2, "mk_tm_{:02}().into_iter().bias({}, {}).skip({}).size_hint()", mk_num, bias, seed, n)
+                        let mres = mtm.into_iter().bias(bias, seed).skip(n).size_hint();
+                        let res = tm.into_iter().bias(bias, seed).skip(n).size_hint();
+                        assert_eq!(mres, res, "mk_tm_{:02}().into_iter().bias({}, {}).skip({}).size_hint()", mk_num, bias, seed, n)
                     }
                 }
             }
@@ -174,9 +174,9 @@ mod de_iter_mut {
         #[test]
         fn rev_count_test~N() {
             let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter_mut().rev().count();
-            let r2 = mtm.iter_mut().rev().count();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().rev().count()", mk_num)
+            let mres = mtm.iter_mut().rev().count();
+            let res = tm.iter_mut().rev().count();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().rev().count()", mk_num)
         }
     });
 
@@ -186,9 +186,9 @@ mod de_iter_mut {
         fn rev_nth_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter_mut().rev().nth(n);
-                let r2 = mtm.iter_mut().rev().nth(n);
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().rev().nth({})", mk_num, n)
+                let mres = mtm.iter_mut().rev().nth(n);
+                let res = tm.iter_mut().rev().nth(n);
+                assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().rev().nth({})", mk_num, n)
             }
         }
     });
@@ -197,9 +197,9 @@ mod de_iter_mut {
         #[test]
         fn rev_collect_test~N() {
             let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter_mut().rev().collect::<Vec<_>>();
-            let r2 = mtm.iter_mut().rev().collect::<Vec<_>>();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().rev().collect::<Vec<_>>()", mk_num)
+            let mres = mtm.iter_mut().rev().collect::<Vec<_>>();
+            let res = tm.iter_mut().rev().collect::<Vec<_>>();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().rev().collect::<Vec<_>>()", mk_num)
         }
     });
 
@@ -233,9 +233,9 @@ mod de_iter_mut {
         fn rev_size_hint_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter_mut().rev().skip(n).size_hint();
-                let r2 = mtm.iter_mut().rev().skip(n).size_hint();
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().rev().skip({}).size_hint()", mk_num, n)
+                let mres = mtm.iter_mut().rev().skip(n).size_hint();
+                let res = tm.iter_mut().rev().skip(n).size_hint();
+                assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().rev().skip({}).size_hint()", mk_num, n)
             }
         }
     });
@@ -246,9 +246,9 @@ mod de_iter_mut {
             for bias in super::BIASES {
                 for seed in super::SEEDS {
                     let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                    let r1 = tm.iter_mut().bias(bias, seed).count();
-                    let r2 = mtm.iter_mut().bias(bias, seed).count();
-                    assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().bias({}, {}).count()", mk_num, bias, seed)
+                    let mres = mtm.iter_mut().bias(bias, seed).count();
+                    let res = tm.iter_mut().bias(bias, seed).count();
+                    assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().bias({}, {}).count()", mk_num, bias, seed)
                 }
             }
         }
@@ -262,9 +262,9 @@ mod de_iter_mut {
                 for seed in super::SEEDS {
                     for n in 0..N+1 {
                         let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                        let r1 = tm.iter_mut().bias(bias, seed).nth(n);
-                        let r2 = mtm.iter_mut().bias(bias, seed).nth(n);
-                        assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().bias({}, {}).nth({})", mk_num, bias, seed, n)
+                        let mres = mtm.iter_mut().bias(bias, seed).nth(n);
+                        let res = tm.iter_mut().bias(bias, seed).nth(n);
+                        assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().bias({}, {}).nth({})", mk_num, bias, seed, n)
                     }
                 }
             }
@@ -277,9 +277,9 @@ mod de_iter_mut {
             for bias in super::BIASES {
                 for seed in super::SEEDS {
                     let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                    let r1 = tm.iter_mut().bias(bias, seed).collect::<Vec<_>>();
-                    let r2 = mtm.iter_mut().bias(bias, seed).collect::<Vec<_>>();
-                    assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().bias({}, {}).collect::<Vec<_>>()", mk_num, bias, seed)
+                    let mres = mtm.iter_mut().bias(bias, seed).collect::<Vec<_>>();
+                    let res = tm.iter_mut().bias(bias, seed).collect::<Vec<_>>();
+                    assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().bias({}, {}).collect::<Vec<_>>()", mk_num, bias, seed)
                 }
             }
         }
@@ -293,9 +293,9 @@ mod de_iter_mut {
                 for seed in super::SEEDS {
                     for n in 0..N+1 {
                         let (mk_num, mut mtm, mut tm) = super::mk_mtm_and_tm_~N();
-                        let r1 = tm.iter_mut().bias(bias, seed).skip(n).size_hint();
-                        let r2 = mtm.iter_mut().bias(bias, seed).skip(n).size_hint();
-                        assert_eq!(r1, r2, "mk_tm_{:02}().iter_mut().bias({}, {}).skip({}).size_hint()", mk_num, bias, seed, n)
+                        let mres = mtm.iter_mut().bias(bias, seed).skip(n).size_hint();
+                        let res = tm.iter_mut().bias(bias, seed).skip(n).size_hint();
+                        assert_eq!(mres, res, "mk_tm_{:02}().iter_mut().bias({}, {}).skip({}).size_hint()", mk_num, bias, seed, n)
                     }
                 }
             }
@@ -346,9 +346,9 @@ mod de_iter {
         #[test]
         fn rev_count_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter().rev().count();
-            let r2 = mtm.iter().rev().count();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter().rev().count()", mk_num)
+            let mres = mtm.iter().rev().count();
+            let res = tm.iter().rev().count();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter().rev().count()", mk_num)
         }
     });
 
@@ -358,9 +358,9 @@ mod de_iter {
         fn rev_nth_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter().rev().nth(n);
-                let r2 = mtm.iter().rev().nth(n);
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter().rev().nth({})", mk_num, n)
+                let mres = mtm.iter().rev().nth(n);
+                let res = tm.iter().rev().nth(n);
+                assert_eq!(mres, res, "mk_tm_{:02}().iter().rev().nth({})", mk_num, n)
             }
         }
     });
@@ -369,9 +369,9 @@ mod de_iter {
         #[test]
         fn rev_collect_test~N() {
             let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-            let r1 = tm.iter().rev().collect::<Vec<_>>();
-            let r2 = mtm.iter().rev().collect::<Vec<_>>();
-            assert_eq!(r1, r2, "mk_tm_{:02}().iter().rev().collect::<Vec<_>>()", mk_num)
+            let mres = mtm.iter().rev().collect::<Vec<_>>();
+            let res = tm.iter().rev().collect::<Vec<_>>();
+            assert_eq!(mres, res, "mk_tm_{:02}().iter().rev().collect::<Vec<_>>()", mk_num)
         }
     });
 
@@ -381,9 +381,9 @@ mod de_iter {
         fn rev_size_hint_test~N() {
             for n in 0..N+1 {
                 let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                let r1 = tm.iter().rev().skip(n).size_hint();
-                let r2 = mtm.iter().rev().skip(n).size_hint();
-                assert_eq!(r1, r2, "mk_tm_{:02}().iter().rev().skip({}).size_hint()", mk_num, n)
+                let mres = mtm.iter().rev().skip(n).size_hint();
+                let res = tm.iter().rev().skip(n).size_hint();
+                assert_eq!(mres, res, "mk_tm_{:02}().iter().rev().skip({}).size_hint()", mk_num, n)
             }
         }
     });
@@ -394,9 +394,9 @@ mod de_iter {
             for bias in super::BIASES {
                 for seed in super::SEEDS {
                     let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                    let r1 = tm.iter().bias(bias, seed).count();
-                    let r2 = mtm.iter().bias(bias, seed).count();
-                    assert_eq!(r1, r2, "mk_tm_{:02}().iter().bias({}, {}).count()", mk_num, bias, seed)
+                    let mres = mtm.iter().bias(bias, seed).count();
+                    let res = tm.iter().bias(bias, seed).count();
+                    assert_eq!(mres, res, "mk_tm_{:02}().iter().bias({}, {}).count()", mk_num, bias, seed)
                 }
             }
         }
@@ -410,9 +410,9 @@ mod de_iter {
                 for seed in super::SEEDS {
                     for n in 0..N+1 {
                         let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                        let r1 = tm.iter().bias(bias, seed).nth(n);
-                        let r2 = mtm.iter().bias(bias, seed).nth(n);
-                        assert_eq!(r1, r2, "mk_tm_{:02}().iter().bias({}, {}).nth({})", mk_num, bias, seed, n)
+                        let mres = mtm.iter().bias(bias, seed).nth(n);
+                        let res = tm.iter().bias(bias, seed).nth(n);
+                        assert_eq!(mres, res, "mk_tm_{:02}().iter().bias({}, {}).nth({})", mk_num, bias, seed, n)
                     }
                 }
             }
@@ -425,9 +425,9 @@ mod de_iter {
             for bias in super::BIASES {
                 for seed in super::SEEDS {
                     let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                    let r1 = tm.iter().bias(bias, seed).collect::<Vec<_>>();
-                    let r2 = mtm.iter().bias(bias, seed).collect::<Vec<_>>();
-                    assert_eq!(r1, r2, "mk_tm_{:02}().iter().bias({}, {}).collect::<Vec<_>>()", mk_num, bias, seed)
+                    let mres = mtm.iter().bias(bias, seed).collect::<Vec<_>>();
+                    let res = tm.iter().bias(bias, seed).collect::<Vec<_>>();
+                    assert_eq!(mres, res, "mk_tm_{:02}().iter().bias({}, {}).collect::<Vec<_>>()", mk_num, bias, seed)
                 }
             }
         }
@@ -441,9 +441,9 @@ mod de_iter {
                 for seed in super::SEEDS {
                     for n in 0..N+1 {
                         let (mk_num, mtm, tm) = super::mk_mtm_and_tm_~N();
-                        let r1 = tm.iter().bias(bias, seed).skip(n).size_hint();
-                        let r2 = mtm.iter().bias(bias, seed).skip(n).size_hint();
-                        assert_eq!(r1, r2, "mk_tm_{:02}().iter().bias({}, {}).skip({}).size_hint()", mk_num, bias, seed, n)
+                        let mres = mtm.iter().bias(bias, seed).skip(n).size_hint();
+                        let res = tm.iter().bias(bias, seed).skip(n).size_hint();
+                        assert_eq!(mres, res, "mk_tm_{:02}().iter().bias({}, {}).skip({}).size_hint()", mk_num, bias, seed, n)
                     }
                 }
             }
