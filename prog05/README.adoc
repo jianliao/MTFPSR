@@ -1,0 +1,794 @@
+# Programming Assignment 05
+:stem: latexmath
+
+In this programming assignment, you will implement a parallel program to execute
+https://en.wikipedia.org/wiki/Elementary_cellular_automaton[elementary cellular
+automata] and report statistics about their execution.
+
+## Sources and Submission
+
+:duetime: 11:59pm
+:dueday: Monday, April 4, 2022
+
+Sources for Programming Assignment&nbsp;05 have been (or will shortly be)
+committed to your repository in the `prog05` sub-directory.  If you cloned your
+repository before the Programming Assignment&nbsp;05 sources have been
+committed, then you will need to _pull_ the upstream changes into your local
+clone, by running the command:
+
+  git pull origin
+
+from the `__ritid__psr` directory.  It is best to _pull_ with no uncommitted
+changes in your local clone, but most commits made to the upstream repository
+will only add a new top-level directory and there should be no merge conflicts.
+
+We will tag programming assignments in the Git repositories at {duetime} on
+{dueday}; make sure that you have _committed_ and _pushed_ your final version
+before that time.  To do so, run the commands:
+
+  git commit -a
+  git push origin main
+
+from the `__ritid__psr` directory.  If old programming assignment comments or
+new programming assignment sources have been committed to your repository since
+you last pulled, then you will receive an error message when trying to push:
+
+  error: failed to push some refs to 'git.cs.rit.edu:psr2215/<ritid>psr.git'
+  hint: Updates were rejected because the remote contains work that you do
+  hint: not have locally. This is usually caused by another repository pushing
+  hint: to the same ref. You may want to first integrate the remote changes
+  hint: (e.g., 'git pull ...') before pushing again.
+  hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+To proceed, you will need to _pull_ the upstream changes into your local clone
+and then _push_ your local changes upstream, by running the commands:
+
+  git pull origin
+  git push origin main
+
+from the `__ritid__psr` directory.
+
+## Elementary Cellular Automata
+
+A cellular automaton is a discrete dynamical system.  The state of the system
+consists of a regular grid of cells, each of which is in one of a finite number
+of states.  At each time step, each cell simultaneously changes state based on
+its state and the states of neighboring cells, according to some fixed rule.
+Conway's http://en.wikipedia.org/wiki/Conway\%27s_Game_of_Life[Game of Life] is
+a famous example of a cellular automaton.  For more background on cellular
+automaton, see http://en.wikipedia.org/wiki/Cellular_automaton and
+http://mathworld.wolfram.com/CellularAutomaton.html.
+
+The simplest (non-trivial) cellular automata are the
+https://en.wikipedia.org/wiki/Elementary_cellular_automaton[elementary cellular
+automata (ECA)].  The state of such automata consists of a one-dimensional grid
+of __N__ cells (indexed from __0__ to __N-1__), each of which is one of two
+values (`1`/`true` or `0`/`false`).  The __population count__ or __popcount__ of
+a state is the number of cells with the value `1`. Here is an example grid with
+__N = 19__:
+
+[.center,%header,cols="19*^"]
+|===
+|_0_|_1_|_2_|_3_|_4_|_5_|_6_|_7_|_8_|_9_|_10_|_11_|_12_|_13_|_14_|_15_|_16_|_17_|_18_
+
+|`0`|`1`|`0`|`0`|`1`|`1`|`1`|`0`|`1`|`0`|`1`|`0`|`1`|`0`|`1`|`0`|`1`|`0`|`1`
+|===
+
+This state's population count is _10_.
+
+Each cell has two neighboring cells. The __left neighbor__ of cell __i__ is cell
+__i-1__ and the __right neighbor__ of cell __i__ is cell __i+1__.  The ends of
+the grid "wrap around"; that is, the left neighbor of cell __0__ is cell __N-1__
+and the right neighbor of cell __N-1__ is cell __0__.  For __N = 2__, the left
+and right neighbors for cell __i__ are the same cell; for __N = 1__, the single
+cell is also its own left and right neighbor.
+
+The elementary cellular automaton has an __update rule__ that is used to compute
+the next value for each cell, based on the current values of the left neighbor,
+the cell itself, and the right neighbor. Here is an example of an update rule:
+
+[.center,%header,cols="<4,8*^"]
+|===
+| **current values (left-center-right)** | `*111*` | `*110*` | `*101*` | `*100*` | `*011*` | `*010*` | `*001*` | `*000*`
+
+| **next value for center cell** | `0` | `0` | `0` | `1` | `1` | `1` | `1` | `0`
+|===
+
+Consider the cell at index __i__. The update rule shown above says:
+
+* If cell __i__'s left neighbor is `0` and cell __i__ is `0` and cell __i__'s right neighbor is `0`, then cell __i__'s next value is `0`.
+* If cell __i__'s left neighbor is `0` and cell __i__ is `0` and cell __i__'s right neighbor is `1`, then cell __i__'s next value is `1`.
+* If cell __i__'s left neighbor is `0` and cell __i__ is `1` and cell __i__'s right neighbor is `0`, then cell __i__'s next value is `1`.
+* If cell __i__'s left neighbor is `0` and cell __i__ is `1` and cell __i__'s right neighbor is `1`, then cell __i__'s next value is `1`.
+* If cell __i__'s left neighbor is `1` and cell __i__ is `0` and cell __i__'s right neighbor is `0`, then cell __i__'s next value is `1`.
+* If cell __i__'s left neighbor is `1` and cell __i__ is `0` and cell __i__'s right neighbor is `1`, then cell __i__'s next value is `0`.
+* If cell __i__'s left neighbor is `1` and cell __i__ is `1` and cell __i__'s right neighbor is `0`, then cell __i__'s next value is `0`.
+* If cell __i__'s left neighbor is `1` and cell __i__ is `1` and cell __i__'s right neighbor is `1`, then cell __i__'s next value is `0`.
+
+An update rule can be represented as a string of __8__ characters with the next
+values given in the order they appear in the table.  The update rule given above
+would be represented as the string `"00011110"`.
+
+An elementary cellular automaton starts in an __initial state__ that gives the
+initial value (`0` or `1`) for each cell.  The elementary cellular automaton
+then goes through a series of __steps__. At each step, the next value for each
+cell is calculated based on the current values using the update rule. Once all
+the next values have been calculated, all the cells simultaneously change to
+their next values.
+
+Here is the execution of rule `"00011110"` on a grid of size __19__ for __10__
+steps initialized with `1` cells at the even indices (and `0` cells at the odd
+indices):
+
+[.center,%header,width=50%,cols=">25,^~,>25"]
+|===
+| step | grid | popcount
+
+| 0 | `1010101010101010101` | 10
+| 1 | `0010101010101010101` | 9
+| 2 | `1110101010101010101` | 11
+| 3 | `0000101010101010101` | 8
+| 4 | `1001101010101010101` | 10
+| 5 | `0111001010101010101` | 10
+| 6 | `0100111010101010101` | 10
+| 7 | `0111100010101010101` | 10
+| 8 | `0100010110101010101` | 9
+| 9 | `0110110100101010101` | 10
+| 10 | `0100100111101010101` | 10
+|===
+
+Here is the execution of rule `"00010110"` on a grid of size
+__19__ for __10__ steps initialized with a single `1` cell:
+
+[.center,%header,width=50%,cols=">25,^~,>25"]
+|===
+| step | grid | popcount
+
+| 0 | `0000000001000000000` | 1
+| 1 | `0000000011100000000` | 3
+| 2 | `0000000100010000000` | 2
+| 3 | `0000001110111000000` | 6
+| 4 | `0000010000000100000` | 2
+| 5 | `0000111000001110000` | 6
+| 6 | `0001000100010001000` | 4
+| 7 | `0011101110111011100` | 12
+| 8 | `0100000000000000010` | 2
+| 9 | `1110000000000000111` | 6
+| 10 | `0001000000000001000` | 2
+|===
+
+## `eca` Binary Crate (link:./eca/src/main.rs[`./eca/src/main.rs`])
+
+The `eca` program executes elementary cellular automata and report statistics
+about their execution.  The (provided)
+link:./eca/src/main.rs[`./eca/src/main.rs`] handles parsing of command line
+arguments and printing of final statistics, dispatching to a requested `run_eca`
+function to initialize, execute, and gather statistics.
+
+### Command-Line Arguments
+
+The `eca` program uses the https://crates.io/crates/clap[`clap` (`crates.io`)]
+library for parsing command line arguments.
+
+----
+$ cargo -q run -- -h
+eca
+Executes elementary cellular automata
+
+USAGE:
+    eca [OPTIONS]
+
+OPTIONS:
+    -h, --help                   Print help information
+    -i, --indices <INDEX,...>    Indicies of initially populated cells [default: SIZE-1]
+    -m, --mode <MODE>            Execution mode [default: seq] [possible values: seq, par]
+    -n, --size <SIZE>            Size of the grid [default: 19]
+    -r, --rule <RULE>            Update rule [default: 01101110]
+    -s, --steps <STEPS>          Number of steps to execute [default: 10]
+    -t, --threads <THREADS>      Number of threads to use in parallel execution mode [default: 4]
+    -v, --visualize              Whether or not to visualize the execution
+----
+
+### Execution
+
+The program initializes an elementary cellular automaton with a grid of _SIZE_
+cells, where the indices of initially populated cells are set to `1` and all
+other indices are set to `0`. The program executes the elementary cellular
+automaton for _STEPS_ steps using the given update rule _rule_.  If _visualize_
+is true, then for each step of execution, the program prints the step number,
+the grid (with `□` for cells with `0`/`false` and `■` for cells with
+`1`/`true`), and the popcount.  After executing for _STEPS_ steps, the program
+prints the following information:
+
+* The minimum popcount encountered over all the steps and the first step number at which that popcount occurred.
+* The maximum popcount encountered over all the steps and the first step number at which that popcount occurred.
+* The popcount for the final step and the final step number.
+* The running time of the execution, in seconds.
+* The bytes allocated, deallocated, and reallocated during execution.
+
+Note that "all the steps" includes the initial (step 0) state.
+
+### Examples
+
+[%nowrap]
+----
+$ cargo -q run -- --mode seq --rule 00011110 --size 19 --steps 10 --indices 0,2,4,6,8,10,12,14,16,18 --visualize
+ 0 ■□■□■□■□■□■□■□■□■□■ 10
+ 1 □□■□■□■□■□■□■□■□■□■  9
+ 2 ■■■□■□■□■□■□■□■□■□■ 11
+ 3 □□□□■□■□■□■□■□■□■□■  8
+ 4 ■□□■■□■□■□■□■□■□■□■ 10
+ 5 □■■■□□■□■□■□■□■□■□■ 10
+ 6 □■□□■■■□■□■□■□■□■□■ 10
+ 7 □■■■■□□□■□■□■□■□■□■ 10
+ 8 □■□□□■□■■□■□■□■□■□■  9
+ 9 □■■□■■□■□□■□■□■□■□■ 10
+10 □■□□■□□■■■■□■□■□■□■ 10
+Minimum popcount:  8 at step  3
+Maximum popcount: 11 at step  2
+  Final popcount: 10 at step 10
+    Running time:  0.0001665660 seconds
+       Allocated:         39563 bytes
+     Deallocated:         38481 bytes
+     Reallocated:         19239 bytes
+----
+
+[#example1]
+#### `cargo -q run -- -n 10000 -s 10000`
+
+----
+$ cargo -q run -- -n 10000 -s 10000 -m seq
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time: 15.5266977760 seconds
+       Allocated:         53711 bytes
+     Deallocated:         53653 bytes
+     Reallocated:         17975 bytes
+$ cargo -q run -- -n 10000 -s 10000 -m par -t 1
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time: 16.0561446440 seconds
+       Allocated:        936938 bytes
+     Deallocated:        936880 bytes
+     Reallocated:         17975 bytes
+$ cargo -q run -- -n 10000 -s 10000 -m par -t 2
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time:  8.7733395420 seconds
+       Allocated:       1970210 bytes
+     Deallocated:       1970152 bytes
+     Reallocated:         17975 bytes
+$ cargo -q run -- -n 10000 -s 10000 -m par -t 4
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time:  4.3543812500 seconds
+       Allocated:       4023922 bytes
+     Deallocated:       4023864 bytes
+     Reallocated:         17975 bytes
+----
+
+[#example2]
+#### `cargo -q run --release -- -n 10000 -s 10000`
+
+----
+$ cargo -q run --release -- -n 10000 -s 10000 -m seq
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time:  0.3732807140 seconds
+       Allocated:         48319 bytes
+     Deallocated:         48261 bytes
+     Reallocated:         16365 bytes
+$ cargo -q run --release -- -n 10000 -s 10000 -m par -t 1
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time:  0.6646186900 seconds
+       Allocated:        930892 bytes
+     Deallocated:        930834 bytes
+     Reallocated:         16365 bytes
+$ cargo -q run --release -- -n 10000 -s 10000 -m par -t 2
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time:  0.5198712180 seconds
+       Allocated:       1813220 bytes
+     Deallocated:       1813162 bytes
+     Reallocated:         16365 bytes
+$ cargo -q run --release -- -n 10000 -s 10000 -m par -t 4
+Minimum popcount:     1 at step     0
+Maximum popcount:  5930 at step 10000
+  Final popcount:  5930 at step 10000
+    Running time:  0.4589574360 seconds
+       Allocated:       3389236 bytes
+     Deallocated:       3389178 bytes
+     Reallocated:         16365 bytes
+----
+
+[#example3]
+#### `cargo -q run --release -- -n 150000 -s 50000`
+
+----
+$ cargo -q run --release -- -n 150000 -s 50000 -m seq
+Minimum popcount:      1 at step     0
+Maximum popcount:  29635 at step 49996
+  Final popcount:  29589 at step 50000
+    Running time: 16.5252051860 seconds
+       Allocated:        328323 bytes
+     Deallocated:        328265 bytes
+     Reallocated:         16365 bytes
+$ cargo -q run --release -- -n 150000 -s 50000 -m par -t 1
+Minimum popcount:      1 at step     0
+Maximum popcount:  29635 at step 49996
+  Final popcount:  29589 at step 50000
+    Running time: 20.8386910400 seconds
+       Allocated:       4730832 bytes
+     Deallocated:       4730774 bytes
+     Reallocated:         16365 bytes
+$ cargo -q run --release -- -n 150000 -s 50000 -m par -t 2
+Minimum popcount:      1 at step     0
+Maximum popcount:  29635 at step 49996
+  Final popcount:  29589 at step 50000
+    Running time: 10.2869010280 seconds
+       Allocated:       9146216 bytes
+     Deallocated:       9146158 bytes
+     Reallocated:         16365 bytes
+$ cargo -q run --release -- -n 150000 -s 50000 -m par -t 4
+Minimum popcount:      1 at step     0
+Maximum popcount:  29635 at step 49996
+  Final popcount:  29589 at step 50000
+    Running time:  6.6200862260 seconds
+       Allocated:      18783224 bytes
+     Deallocated:      18783166 bytes
+     Reallocated:         16365 bytes
+----
+
+## `eca::seq::run_eca` (link:./eca/src/seq.rs[`./eca/src/seq.rs`])
+
+The (provided) `eca::seq::run_eca` function is a reference sequential
+implementation used with `--mode seq`.
+
+[source,rust]
+----
+pub fn run_eca<W>(
+    rule: [bool; 8],
+    size: usize,
+    steps: usize,
+    indices: Vec<usize>,
+    write: Option<W>,
+) -> ((usize, usize), (usize, usize), usize)
+where
+    W: std::io::Write,
+{
+    assert!(size >= 1);
+    assert!(indices.iter().all(|i| *i < size));
+
+    ...
+}
+----
+
+Note that the `rule: [bool; 8]` argument has the next value for the current cell
+with current (left-center-right) values `000` in index _0_ of `rule` and has the
+next value for the current cell with current (left-center-right) values `111` in
+index _7_ of `rule`.  Thus, the current (left-center-right) values may be
+interpreted as a 3-bit number (high-bit: left, low-bit: right) used to index
+`rule`.
+
+The `write: Option<W>` argument is `Some(w)` when visualization is requested;
+the lines of the visualization are be written to `w` (e.g., using the
+https://doc.rust-lang.org/stable/std/macro.write.html[`write!`] and
+https://doc.rust-lang.org/stable/std/macro.writeln.html[`writeln!`] macros,
+which are similar to the
+https://doc.rust-lang.org/stable/std/macro.print.html[`print!`] and
+https://doc.rust-lang.org/stable/std/macro.println.html[`println!`] macro).
+
+The result is a tuple representing
+`((min_popcnt, min_popcnt_step), (max_popcnt, max_popcnt_step), final_popcnt)`
+observed during execution.
+
+Note that the implementation uses exactly two `Vec<bool>` objects (`curr` and
+`next`), swapping their meanings each iteration of the execution.  This avoids
+any allocation (or deallocation) during each iteration of the execution.
+
+## `eca::par::run_eca` (link:./eca/src/par.rs[`./eca/src/par.rs`])
+
+**Complete the `eca::seq::run_eca` function, a _parallel_ implementation used with `--mode par`.**
+
+Also, describe the design of the _parallel_ implementation of `run_eca`.
+Especially comment on what synchronization primitives are used and how data is
+communicated or shared between threads.
+
+[source,rust]
+----
+pub fn run_eca<W>(
+    threads: usize,
+    rule: [bool; 8],
+    size: usize,
+    steps: usize,
+    indices: Vec<usize>,
+    write: Option<W>,
+) -> ((usize, usize), (usize, usize), usize)
+where
+    W: std::io::Write + Send + 'static,
+{
+    assert!(threads >= 1);
+    assert!(size >= 1);
+    assert!(indices.iter().all(|i| *i < size));
+
+    ...
+}
+----
+
+The `rule: [bool; 8]` and `write: Option<W>` arguments and the
+`((usize, usize), (usize, usize), usize)` result are as described above for
+`eca::seq::run_eca`.
+
+### Requirements
+
+The `eca::par::run_eca` function must be implemented using only the
+https://doc.rust-lang.org/stable/std/index.html[Rust Standard Library], and
+should use both
+https://doc.rust-lang.org/stable/std/thread/index.html[`std::thread`] and
+https://doc.rust-lang.org/stable/std/sync/index.html[`std::sync`].  The
+`eca::par::run_eca` function may not be implemented using any external crates.
+
+The `eca::par::run_eca` function should create (approximately) _THREADS_ worker
+threads and distribute the execution of the elementary cellular automaton among
+these workers.  The "create (approximately) _THREADS_ worker threads" admits a
+number of different implementations:
+
+* create exactly _THREADS_ worker threads, in addition to the main initial
+  thread (which does no execution work)
+* create exactly _THREADS-1_ worker threads, in addition to the main initial
+  thread (which does an equal share of execution work)
+* create exactly _THREADS_ worker threads and an additional coordinator thread
+  (which does no meaningful execution work, but does communicate with the worker
+  threads), in addition to the main initial thread (which does no execution
+  work)
+
+For full credit, the `eca::par::run_eca` function must support visualization of
+the execution as described above, but for significant partial credit, the
+`eca::par::run_eca` function may ignore the `write` argument and execute the
+elementary cellular automaton without any visualization.
+
+Rubric:
+
+* 25%: Description of design.
+* 20%: Creates (approximately) _THREADS_ worker threads and equally distributes the execution of the elementary cellular automaton among the worker threads
+* 10%: Uses proper synchronization among threads
+* 10%: Achieves stem:[S_4 > 2] for `cargo -q run -- -n 10000 -s 10000` and achieves stem:[S_4 > 1.5] for `cargo -q run --release -- -n 150000 -s 50000`; see <<parallel-speedup-and-parallel-efficiency>>
+* 15%: Correctly gathers statistics about the execution
+* 10%: Minimizes allocation and deallocation by reusing buffers and does not unnecessarily copy to share or send data among threads
+* 10%: Fully supports visualization of the execution
+
+### Discussion/Hints
+
+The work required to compute the next value for a cell is the same for all cells
+and independent of the current values of the cell and its neighbors.  Therefore,
+it suffices to divide the grid equally among the worker threads and no
+sophisiticated load balancing is required.
+
+Of course, the "trick" is that each worker thread will need to know the current
+values of some of the cells being managed by other worker threads.  Also, the
+minimum and maximum population count must be with respect to the whole grid (and
+it cannot be correctly calculated by considering the minimum and maximum
+population counts observed by each worker thread for the portion of the grid
+that it manages).
+
+Be sure that the implementation works correctly when the grid size is not a
+multiple of the number of threads.  For example, with __SIZE = 9999__ and
+__THREADS = 4__, it would be best to have three worker threads each manage
+_2500_ cells and one worker thread manage _2499_ cells (rather than have three
+worker threads each manage _2499_ cells and one worker thread manage _2503_
+cells).
+
+It is possible to implement `eca::par::run_eca` using only the synchronization
+primitives discussed in the textbook
+(https://doc.rust-lang.org/stable/std/sync/mpsc/index.html[`std::sync::mpsc`]
+(although it may be somewhat simpler to use
+https://doc.rust-lang.org/stable/std/sync/mpsc/fn.sync_channel.html[`std::sync::mpsc::sync_channel`]
+(with a bound of `0`) rather than
+https://doc.rust-lang.org/stable/std/sync/mpsc/fn.channel.html[`std::sync::mpsc::channel`]
+(which is implicitly unbounded)),
+https://doc.rust-lang.org/stable/std/sync/struct.Arc.html[`std::sync::Arc`], and
+https://doc.rust-lang.org/stable/std/sync/struct.Mutex.html[`std::sync::Mutex`]).
+However, you are also welcome to use other synchronization primitives provided
+by https://doc.rust-lang.org/stable/std/sync/index.html[`std::sync`]
+(https://doc.rust-lang.org/stable/std/thread/fn.park.html[`std::thread::park`],
+https://doc.rust-lang.org/stable/std/sync/struct.Barrier.html[`std::sync::Barrier`],
+https://doc.rust-lang.org/stable/std/sync/struct.Condvar.html[`std::sync::Condvar`],
+https://doc.rust-lang.org/stable/std/sync/struct.RwLock.html[`std::sync::RwLock`],
+https://doc.rust-lang.org/stable/std/sync/atomic/index.html[`std::sync::atomic`]).
+
+Visualizing the execution will be a sequential bottleneck, so do not expect
+significant speedups when using `--mode par --visualize`.  Nonetheless, an
+implementation should strive to integrate visualization "naturally" with the
+parallelism and not incur unnecessary cost; for example, request that a worker
+thread print its portion of the grid (while all other worker threads are
+paused), rather than having each worker thread clone and send their portion of
+the grid to dedicated printing thread.
+
+The reference solution (using only
+https://doc.rust-lang.org/stable/std/thread/index.html[`std::thread`],
+https://doc.rust-lang.org/stable/std/sync/mpsc/fn.channel.html[`std::sync::mpsc::channel`],
+https://doc.rust-lang.org/stable/std/sync/struct.Arc.html[`std::sync::Arc`], and
+https://doc.rust-lang.org/stable/std/sync/struct.Mutex.html[`std::sync::Mutex`])
+is 157 lines (when formatted with `cargo fmt`).
+
+Some additional thoughts:
+
+* A thread pool is a poor parallelism mechanism for this problem.  The work to
+  calculate one element of the grid is much too small for a thread pool task;
+  the overhead of creating the task, scheduling it, and executing it is
+  magnitudes greater than that of the computation itself.
+
+* Creating (and destroying) threads for each step adds significant overhead.
+
+* Putting entire grids under a
+  https://doc.rust-lang.org/stable/std/sync/struct.Mutex.html[`std::sync::Mutex`]
+  means that only one thread is able to read from the current grid at a time and
+  only one thread is able to write to the next grid at a time.
+
+* Putting entire grids under a
+  https://doc.rust-lang.org/stable/std/sync/struct.RwLock.html[`std::sync::RwLock`
+  means that multipe threads are able to read from the current grid at once, but
+  only one thread is able to write to the next grid at a time.
+
+* Copying (portions of the) grids between the main thread and worker threads
+  would be a sequential bottleneck.
+
+* Creating (and destroying) (portions of the) grids for each step adds
+  significant overhead.
+
+* The `rule` is https://doc.rust-lang.org/std/marker/trait.Copy.html[`Copy`], so
+  can be shared directly (without
+  https://doc.rust-lang.org/stable/std/sync/struct.Arc.html[`std::sync::Arc`] or
+  https://doc.rust-lang.org/stable/std/sync/struct.Mutex.html[`std::sync::Mutex`]).
+
+* Channel endpoints
+  (https://doc.rust-lang.org/std/sync/mpsc/struct.Receiver.html[`Receiver`] and
+  https://doc.rust-lang.org/std/sync/mpsc/struct.Sender.html[`Sender`]) are
+  https://doc.rust-lang.org/std/marker/trait.Copy.html[`Copy`], so can be shared
+  directly (without
+  https://doc.rust-lang.org/stable/std/sync/struct.Arc.html[`std::sync::Arc`] or
+  https://doc.rust-lang.org/stable/std/sync/struct.Mutex.html[`std::sync::Mutex`]).
+
+[#parallel-speedup-and-parallel-efficiency]
+### Parallel Speedup and Parallel Efficiency
+
+Parallel speedup and parallel efficiency are the standard metrics to judge the
+effectiveness of parallelizing a computation.  The parallel speedup stem:[(S_t)]
+(using stem:[t] threads) is defined as the ratio of the sequential execution
+time stem:[(T_{seq})] to the parallel execution time stem:[(T_{par(t)})] (using
+stem:[t] threads):
+
+[stem]
+++++
+S_t = \frac{T_{seq}}{T_{par(t)}}
+++++
+
+Parallel efficiency stem:[(E_t)] (using stem:[t] threads) is defined as the
+ratio of the parallel speedup stem:[(S_t)] to the number of threads stem:[(t)]:
+
+[stem]
+++++
+E_t = \frac{S_t}{t} = \frac{T_{seq}}{t \times T_{par(t)}}
+++++
+
+Perfect (or linear) parallel speedup occurs when stem:[S_t = t] (and, therefore,
+stem:[E_t = 1]) over a range of _t_.  However, most computations are made up of
+both necessarily sequential parts and parallelizable parts;
+https://en.wikipedia.org/wiki/Amdahl%27s_law[Amdahl's law] asserts that the
+speedup will be limited by the fraction of the computation that is necessarily
+sequential.  Also, managing and orchestrating the parallelization (e.g.,
+starting threads, performing synchronizations) adds overhead that is not present
+in the sequential computation.  So one typically observes stem:[S_t < t] (and
+stem:[E_t < 1]).  Also, note that it is rarely meaningful to consider the
+parallel speedup and parallel efficiency for stem:[t > p], where stem:[p] is the
+number of processors available.
+
+The speedup and efficiency for the first example above (<<example1>>) is
+calculated as follows:
+
+[stem]
+++++
+\begin{array}{rclcl}
+S_1 & = & \frac{15.5266977760s}{16.0561446440s} & = & 0.96702528 \\
+S_2 & = & \frac{15.5266977760s}{8.7733395420s} & = & 1.769759132 \\
+S_4 & = & \frac{15.5266977760s}{4.3543812500s} & = & 3.56576443 \\
+\\
+E_1 & = & \frac{0.96702528}{1} & = & 0.96702528 \\
+E_2 & = & \frac{1.769759132}{2} & = & 0.884879566 \\
+E_4 & = & \frac{3.56576443}{4} & = & 0.891441108 \\
+\end{array}
+++++
+
+This is fairly good speedup and efficiency.  Things are not so good with the
+second example above (<<example2>>):
+
+[stem]
+++++
+\begin{array}{rclcl}
+S_1 & = & \frac{0.3732807140s}{0.6646186900s} & = & 0.561646429 \\
+S_2 & = & \frac{0.3732807140s}{0.5198712180s} & = & 0.718025351 \\
+S_4 & = & \frac{0.3732807140s}{0.4589574360s} & = & 0.813323164 \\
+\\
+E_1 & = & \frac{0.561646429}{1} & = & 0.561646429 \\
+E_2 & = & \frac{0.718025351}{2} & = & 0.359012676 \\
+E_4 & = & \frac{0.813323164}{4} & = & 0.203330791 \\
+\end{array}
+++++
+
+Apparently, `debug` mode adds significant overhead in the parallelizable
+portions of the computation.  We can observe better parallel speedup and
+efficiency by increasing the grid size and the number of steps, as in the third
+example above (<<example3>>):
+
+[stem]
+++++
+\begin{array}{rclcl}
+S_1 & = & \frac{16.5252051860s}{20.8386910400s} & = & 0.793005912 \\
+S_2 & = & \frac{16.5252051860s}{10.2869010280s} & = & 1.606431824 \\
+S_4 & = & \frac{16.5252051860s}{6.6200862260s} & = & 2.496222046 \\
+\\
+E_1 & = & \frac{0.793005912}{1} & = & 0.793005912 \\
+E_2 & = & \frac{1.606431824}{2} & = & 0.803215912 \\
+E_4 & = & \frac{2.496222046}{4} & = & 0.624055512 \\
+\end{array}
+++++
+
+## Challenges
+
+The following are neither submission requirements nor extra credit work.  They
+are simply opportunities to challenge your understanding of and skills with
+Rust.
+
+### Use https://crates.io/crates/rayon[`rayon` (`crates.io`)]
+
+https://crates.io/crates/rayon[`rayon`] is a data-parallelism library for Rust.
+
+* Add the following line to the `Cargo.toml` file:
++
+--
+----
+rayon = "1.5"
+----
+--
+* Add a `./eca/src/ray.rs` file, add `pub use ray;` to
+  link:./eca/src/lib.rs[`./eca/src/lib.rs`], and implement an
+  `eca::ray::run_eca` function using https://crates.io/crates/rayon[`rayon`].
++
+--
+[source,rust]
+----
+extern crate rayon;
+use rayon::prelude::*;
+
+pub fn run_eca<W>(
+    threads: usize,
+    rule: [bool; 8],
+    size: usize,
+    steps: usize,
+    indices: Vec<usize>,
+    write: Option<W>,
+) -> ((usize, usize), (usize, usize), usize)
+where
+    W: std::io::Write + Send + 'static,
+{
+    assert!(threads >= 1);
+    assert!(size >= 1);
+    assert!(indices.iter().all(|i| *i < size));
+
+    rayon::ThreadPoolBuilder::new().num_threads(threads).build_global().unwrap();
+
+    ...
+}
+----
+Note that the global thread pool is configured to use the requested (rather than
+the https://crates.io/crates/rayon[`rayon`] default) number of worker threads.
+--
+* Add a `Mode::Ray` variant to the `enum Mode` in
+  link:./eca/src/main.rs[`./eca/src/main.rs`] and otherwise modify the file to
+  support a `+--mode ray+` that uses `eca::ray::run_eca`.
+* Compare the code complexity and performance of `eca::par::run_eca` and `eca::ray::run_eca`.
+
+### Use https://crates.io/crates/parking_lot[`parking_lot` (`crates.io`)]
+
+https://crates.io/crates/parking_lot[`parking_lot`] provides implementations of
+synchronization primitives that are smaller, (typically) faster, and more
+flexible than those in the Rust standard library.
+
+* Add the following line to the `Cargo.toml` file:
++
+--
+----
+parking_lot = "0.12"
+----
+--
+* Add a `./eca/src/pl.rs` file, add `pub use pl;` to
+  link:./eca/src/lib.rs[`./eca/src/lib.rs`], and implement an `eca::pl::ray_eca`
+  function using https://crates.io/crates/parking_lot[`parking_lot`].
++
+--
+[source,rust]
+----
+extern crate parking_lot;
+
+pub fn run_eca<W>(
+    threads: usize,
+    rule: [bool; 8],
+    size: usize,
+    steps: usize,
+    indices: Vec<usize>,
+    write: Option<W>,
+) -> ((usize, usize), (usize, usize), usize)
+where
+    W: std::io::Write + Send + 'static,
+{
+    assert!(threads >= 1);
+    assert!(size >= 1);
+    assert!(indices.iter().all(|i| *i < size));
+
+    ...
+}
+----
+--
+* Add a `Mode::PL` variant to the `enum Mode` in
+  link:./eca/src/main.rs[`./eca/src/main.rs`] and otherwise modify the file to
+  support a `--mode pl` that uses `eca::pl::run_eca`.
+* Compare the code complexity and performance of `eca::par::run_eca` and `eca::pl::run_eca`.
+
+### Use https://crates.io/crates/crossbeam[`crossbeam` (crates.io)]
+
+https://crates.io/crates/crossbeam[`crossbeam`] provides a set of tools for
+concurrent programming.  Of particular interest might be multi-producer
+multi-consumer channels for message passing
+(https://docs.rs/crossbeam/0.8.0/crossbeam/channel/index.html[`crossbeam::channel`]),
+sharded reader-writer locks with fast concurrent reads
+(https://docs.rs/crossbeam/0.8.0/crossbeam/sync/struct.ShardedLock.html[`crossbeam::sync::ShardedLock`]),
+and spawning threads that borrow local variables from the stack
+(https://docs.rs/crossbeam/0.8.0/crossbeam/fn.scope.html[`crossbeam::scope`]).
+
+* Add the following line to the `Cargo.toml` file:
++
+--
+----
+crossbeam = "0.8"
+----
+--
+* Add a `./eca/src/cb.rs` file, add `pub use cb;` to
+  link:./eca/src/lib.rs[`./eca/src/lib.rs`], and implement an `eca::cb::ray_eca`
+  function using https://crates.io/crates/crossbeam[`crossbeam`].
++
+--
+[source,rust]
+----
+extern crate crossbeam;
+
+pub fn run_eca<W>(
+    threads: usize,
+    rule: [bool; 8],
+    size: usize,
+    steps: usize,
+    indices: Vec<usize>,
+    write: Option<W>,
+) -> ((usize, usize), (usize, usize), usize)
+where
+    W: std::io::Write,
+{
+    assert!(threads >= 1);
+    assert!(size >= 1);
+    assert!(indices.iter().all(|i| *i < size));
+
+    ...
+}
+----
+--
+* Add a `Mode::CB` variant to the `enum Mode` in
+  link:./eca/src/main.rs[`./eca/src/main.rs`] and otherwise modify the file to
+  support a `--mode cb` that uses `eca::cb::run_eca`.
+* Compare the code complexity and performance of `eca::par::run_eca` and `eca::cb::run_eca`.
