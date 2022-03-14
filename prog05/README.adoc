@@ -227,10 +227,10 @@ $ cargo -q run -- --mode seq --rule 00011110 --size 19 --steps 10 --indices 0,2,
 Minimum popcount:  8 at step  3
 Maximum popcount: 11 at step  2
   Final popcount: 10 at step 10
-    Running time:  0.0001665660 seconds
-       Allocated:         39563 bytes
-     Deallocated:         38481 bytes
-     Reallocated:         19239 bytes
+    Running time:  0.0002358600 seconds
+       Allocated:         40075 bytes
+     Deallocated:         38993 bytes
+     Reallocated:         19751 bytes
 ----
 
 [#example1]
@@ -241,34 +241,34 @@ $ cargo -q run -- -n 10000 -s 10000 -m seq
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time: 15.5266977760 seconds
-       Allocated:         53711 bytes
-     Deallocated:         53653 bytes
-     Reallocated:         17975 bytes
+    Running time: 14.9378264760 seconds
+       Allocated:         54223 bytes
+     Deallocated:         54165 bytes
+     Reallocated:         18487 bytes
 $ cargo -q run -- -n 10000 -s 10000 -m par -t 1
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time: 16.0561446440 seconds
-       Allocated:        936938 bytes
-     Deallocated:        936880 bytes
-     Reallocated:         17975 bytes
+    Running time: 14.6755814040 seconds
+       Allocated:        377282 bytes
+     Deallocated:        377224 bytes
+     Reallocated:         18487 bytes
 $ cargo -q run -- -n 10000 -s 10000 -m par -t 2
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time:  8.7733395420 seconds
-       Allocated:       1970210 bytes
-     Deallocated:       1970152 bytes
-     Reallocated:         17975 bytes
+    Running time:  7.7548711620 seconds
+       Allocated:        794362 bytes
+     Deallocated:        794304 bytes
+     Reallocated:         18487 bytes
 $ cargo -q run -- -n 10000 -s 10000 -m par -t 4
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time:  4.3543812500 seconds
-       Allocated:       4023922 bytes
-     Deallocated:       4023864 bytes
-     Reallocated:         17975 bytes
+    Running time:  4.0093348360 seconds
+       Allocated:       1455138 bytes
+     Deallocated:       1455080 bytes
+     Reallocated:         18487 bytes
 ----
 
 [#example2]
@@ -279,34 +279,34 @@ $ cargo -q run --release -- -n 10000 -s 10000 -m seq
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time:  0.3732807140 seconds
-       Allocated:         48319 bytes
-     Deallocated:         48261 bytes
-     Reallocated:         16365 bytes
+    Running time:  0.3631243820 seconds
+       Allocated:         48831 bytes
+     Deallocated:         48773 bytes
+     Reallocated:         16877 bytes
 $ cargo -q run --release -- -n 10000 -s 10000 -m par -t 1
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time:  0.6646186900 seconds
-       Allocated:        930892 bytes
-     Deallocated:        930834 bytes
-     Reallocated:         16365 bytes
+    Running time:  0.5566590180 seconds
+       Allocated:        371308 bytes
+     Deallocated:        371250 bytes
+     Reallocated:         16877 bytes
 $ cargo -q run --release -- -n 10000 -s 10000 -m par -t 2
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time:  0.5198712180 seconds
-       Allocated:       1813220 bytes
-     Deallocated:       1813162 bytes
-     Reallocated:         16365 bytes
+    Running time:  0.4173323600 seconds
+       Allocated:        770532 bytes
+     Deallocated:        770474 bytes
+     Reallocated:         16877 bytes
 $ cargo -q run --release -- -n 10000 -s 10000 -m par -t 4
 Minimum popcount:     1 at step     0
 Maximum popcount:  5930 at step 10000
   Final popcount:  5930 at step 10000
-    Running time:  0.4589574360 seconds
-       Allocated:       3389236 bytes
-     Deallocated:       3389178 bytes
-     Reallocated:         16365 bytes
+    Running time:  0.3374530820 seconds
+       Allocated:       1081044 bytes
+     Deallocated:       1080986 bytes
+     Reallocated:         16877 bytes
 ----
 
 [#example3]
@@ -317,34 +317,34 @@ $ cargo -q run --release -- -n 150000 -s 50000 -m seq
 Minimum popcount:      1 at step     0
 Maximum popcount:  29635 at step 49996
   Final popcount:  29589 at step 50000
-    Running time: 16.5252051860 seconds
-       Allocated:        328323 bytes
-     Deallocated:        328265 bytes
-     Reallocated:         16365 bytes
+    Running time: 14.8887335880 seconds
+       Allocated:        328835 bytes
+     Deallocated:        328777 bytes
+     Reallocated:         16877 bytes
 $ cargo -q run --release -- -n 150000 -s 50000 -m par -t 1
 Minimum popcount:      1 at step     0
 Maximum popcount:  29635 at step 49996
   Final popcount:  29589 at step 50000
-    Running time: 20.8386910400 seconds
-       Allocated:       4730832 bytes
-     Deallocated:       4730774 bytes
-     Reallocated:         16365 bytes
+    Running time: 20.5125550780 seconds
+       Allocated:       1931304 bytes
+     Deallocated:       1931246 bytes
+     Reallocated:         16877 bytes
 $ cargo -q run --release -- -n 150000 -s 50000 -m par -t 2
 Minimum popcount:      1 at step     0
 Maximum popcount:  29635 at step 49996
   Final popcount:  29589 at step 50000
-    Running time: 10.2869010280 seconds
-       Allocated:       9146216 bytes
-     Deallocated:       9146158 bytes
-     Reallocated:         16365 bytes
+    Running time: 10.2510968640 seconds
+       Allocated:       4237472 bytes
+     Deallocated:       4237414 bytes
+     Reallocated:         16877 bytes
 $ cargo -q run --release -- -n 150000 -s 50000 -m par -t 4
 Minimum popcount:      1 at step     0
 Maximum popcount:  29635 at step 49996
   Final popcount:  29589 at step 50000
-    Running time:  6.6200862260 seconds
-       Allocated:      18783224 bytes
-     Deallocated:      18783166 bytes
-     Reallocated:         16365 bytes
+    Running time:  5.1254566180 seconds
+       Allocated:       5670448 bytes
+     Deallocated:       5670390 bytes
+     Reallocated:         16877 bytes
 ----
 
 ## `eca::seq::run_eca` (link:./eca/src/seq.rs[`./eca/src/seq.rs`])
@@ -597,13 +597,13 @@ calculated as follows:
 [stem]
 ++++
 \begin{array}{rclcl}
-S_1 & = & \frac{15.5266977760s}{16.0561446440s} & = & 0.96702528 \\
-S_2 & = & \frac{15.5266977760s}{8.7733395420s} & = & 1.769759132 \\
-S_4 & = & \frac{15.5266977760s}{4.3543812500s} & = & 3.56576443 \\
+S_1 & = & \frac{14.9378264760s}{14.6755814040s} & = & 1.017869484 \\
+S_2 & = & \frac{14.9378264760s}{7.7548711620s} & = & 1.926250761 \\
+S_4 & = & \frac{14.9378264760s}{4.0093348360s} & = & 3.725761775 \\
 \\
-E_1 & = & \frac{0.96702528}{1} & = & 0.96702528 \\
-E_2 & = & \frac{1.769759132}{2} & = & 0.884879566 \\
-E_4 & = & \frac{3.56576443}{4} & = & 0.891441108 \\
+E_1 & = & \frac{1.017869484}{1} & = & 1.017869484 \\
+E_2 & = & \frac{1.926250761}{2} & = & 0.96312538 \\
+E_4 & = & \frac{3.725761775}{4} & = & 0.931440444 \\
 \end{array}
 ++++
 
@@ -613,31 +613,31 @@ second example above (<<example2>>):
 [stem]
 ++++
 \begin{array}{rclcl}
-S_1 & = & \frac{0.3732807140s}{0.6646186900s} & = & 0.561646429 \\
-S_2 & = & \frac{0.3732807140s}{0.5198712180s} & = & 0.718025351 \\
-S_4 & = & \frac{0.3732807140s}{0.4589574360s} & = & 0.813323164 \\
+S_1 & = & \frac{0.3631243820s}{0.5566590180s} & = & 0.652328212 \\
+S_2 & = & \frac{0.3631243820s}{0.4173323600s} & = & 0.870108376\\
+S_4 & = & \frac{0.3631243820s}{0.3374530820s} & = & 1.076073687 \\
 \\
-E_1 & = & \frac{0.561646429}{1} & = & 0.561646429 \\
-E_2 & = & \frac{0.718025351}{2} & = & 0.359012676 \\
-E_4 & = & \frac{0.813323164}{4} & = & 0.203330791 \\
+E_1 & = & \frac{0.652328212}{1} & = & 0.652328212 \\
+E_2 & = & \frac{0.870108376}{2} & = & 0.435054188 \\
+E_4 & = & \frac{1.076073687}{4} & = & 0.269018422 \\
 \end{array}
 ++++
 
-Apparently, `debug` mode adds significant overhead in the parallelizable
-portions of the computation.  We can observe better parallel speedup and
-efficiency by increasing the grid size and the number of steps, as in the third
-example above (<<example3>>):
+Apparently, `dev` profile (`unoptimized + debuginfo`) adds significant overhead
+in the parallelizable portions of the computation.  We can observe better
+parallel speedup and efficiency by increasing the grid size and the number of
+steps, as in the third example above (<<example3>>):
 
 [stem]
 ++++
 \begin{array}{rclcl}
-S_1 & = & \frac{16.5252051860s}{20.8386910400s} & = & 0.793005912 \\
-S_2 & = & \frac{16.5252051860s}{10.2869010280s} & = & 1.606431824 \\
-S_4 & = & \frac{16.5252051860s}{6.6200862260s} & = & 2.496222046 \\
+S_1 & = & \frac{14.8887335880s}{20.5125550780s} & = & 0.725835155 \\
+S_2 & = & \frac{14.8887335880s}{10.2510968640s} & = & 1.452403951 \\
+S_4 & = & \frac{14.8887335880s}{5.1254566180s} & = & 2.904859937 \\
 \\
-E_1 & = & \frac{0.793005912}{1} & = & 0.793005912 \\
-E_2 & = & \frac{1.606431824}{2} & = & 0.803215912 \\
-E_4 & = & \frac{2.496222046}{4} & = & 0.624055512 \\
+E_1 & = & \frac{0.725835155}{1} & = & 0.725835155 \\
+E_2 & = & \frac{1.452403951}{2} & = & 0.726201976 \\
+E_4 & = & \frac{2.904859937}{4} & = & 0.726214984 \\
 \end{array}
 ++++
 
