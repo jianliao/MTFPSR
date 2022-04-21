@@ -60,8 +60,8 @@ impl Distribution<Weapon> for Standard {
 /* ************************************************************************* */
 
 #[derive(Debug, thiserror::Error)]
-#[error("expected `{expected}` during {phase} phase, but got `{line}`{}",
-        match xtra {None => Cow::Borrowed(""), Some(xtra) => Cow::Owned(format!("; {}", xtra))})]
+#[error("expected `{expected}`{} during {phase} phase, but got `{line}`",
+        match xtra {None => Cow::Borrowed(""), Some(xtra) => Cow::Owned(format!(" with {}", xtra))})]
 struct NextLineExpectError {
     expected: String,
     line: String,
@@ -69,16 +69,15 @@ struct NextLineExpectError {
     xtra: Option<String>,
 }
 #[derive(Debug, thiserror::Error)]
-#[error("timeout after `{:.2}s during {phase} phase{}", dur.as_secs_f32(),
-        match xtra {None => Cow::Borrowed(""), Some(xtra) => Cow::Owned(format!("; {}", xtra))})]
+#[error("timeout after {:.2}s during {phase} phase", dur.as_secs_f32())]
 struct NextLineTimeoutError {
     dur: Duration,
     phase: &'static str,
-    xtra: Option<String>,
 }
 #[derive(Debug, thiserror::Error)]
-#[error("expected `{expected}` during {phase} phase, but timeout after {:.2}s{}", dur.as_secs_f32(),
-        match xtra {None => Cow::Borrowed(""), Some(xtra) => Cow::Owned(format!("; {}", xtra))})]
+#[error("expected `{expected}`{} during {phase} phase, but timeout after {:.2}s",
+        match xtra {None => Cow::Borrowed(""), Some(xtra) => Cow::Owned(format!(" with {}", xtra))},
+        dur.as_secs_f32())]
 struct NextLineExpectTimeoutError {
     dur: Duration,
     expected: String,
@@ -126,12 +125,7 @@ impl PeerConnection {
     ) -> ResultBoxErr<String> {
         match future::timeout(dur, self.next_line(phase)).await {
             Ok(res) => Ok(res?),
-            Err(_) => Err(NextLineTimeoutError {
-                dur,
-                phase,
-                xtra: None,
-            }
-            .into()),
+            Err(_) => Err(NextLineTimeoutError { dur, phase }.into()),
         }
     }
     async fn next_line_expect_timeout_err(
@@ -866,7 +860,7 @@ async fn player<R: Rng>(
                 None => Err(InconsistentStatsError {
                     actual: next_stats.to_string(),
                     expected: match maybe_statss {
-                        [maybe_stats] => format!("`{}`", maybe_stats),
+                        [maybe_stats] => format!("{}", maybe_stats),
                         [maybe_stats0, maybe_stats1] => {
                             format!("{}` or `{}", maybe_stats0, maybe_stats1)
                         }
@@ -1208,7 +1202,7 @@ async fn player_play<R: Rng>(
     let (opponent_weapon, opponent_bad) =
         match future::timeout(weapon_timeout.mul_f32(1.25), receiver.next()).await {
             Ok(None) => (None, true),
-            Ok(Some((msg_opponent, msg_opponent_bad, msg_weapon))) => {
+            Ok(Some((msg_opponent, msg_opponent_bad, msg_opponent_weapon))) => {
                 if msg_opponent != opponent {
                     return Err(OpponentError {
                         msg: format!(
@@ -1218,7 +1212,7 @@ async fn player_play<R: Rng>(
                     }
                     .into());
                 }
-                (msg_weapon, msg_opponent_bad)
+                (msg_opponent_weapon, msg_opponent_bad)
             }
             Err(_) => (None, true),
         };
