@@ -29,14 +29,14 @@ graph TD
     login5 -->|"?(passwd == db.password(uname) && db.login(uname))"| cmdlp0
 
 
-    cmdlp0 ---->|"output(''Enter command {passwd,play,players,stats,quit} [timeout {{command_timeout}}]:'')<br>input(cmd)"| cmdlp1
+    cmdlp0 ---->|"output(''Enter command {passwd,play,players,stats,quit} [timeout {{command_timeout}}s]:'')<br>input(cmd)"| cmdlp1
     cmdlp1 -->|"?(!timeout({{command_timeout}}) && cmd == ''passwd'')"| cmdlp2
     cmdlp1 -->|"?(!timeout({{command_timeout}}) && cmd == ''play'')<br>output(''Waiting for opponent [{{play_timeout}} timeout]'')"| cmdlp3
     cmdlp1 -->|"?(!timeout({{command_timeout}}) && cmd == ''players''<br>output(''Online users: {{db.players()}}''))"| cmdlp0
     cmdlp1 -->|"?(!timeout({{command_timeout}}) && cmd == ''standings'')<br>output(''Standings: {{db.standings()}}'')"| cmdlp0
     cmdlp1 -->|"?(!timeout({{command_timeout}}) && cmd == ''stats'')<br>output(''{{uname}}: {{db.stats(uname)}}'')"| cmdlp0
     cmdlp1 ---->|"?(!timeout({{command_timeout}}) && cmd == ''quit'')<br>output(''Goodbye!'')<br><terminate>"| logout
-    cmdlp1 ---->|"?(timeout({{command_timeout}}))<br>output(''Timeout after {{command_timeout}}'')<br><terminate>"| logout
+    cmdlp1 ---->|"?(timeout({{command_timeout}}))<br>output(''Timeout after {{command_timeout}}s'')<br><terminate>"| logout
     cmdlp1 -->|"?(!timeout({{command_timeout}}) && ![''passwd'',''play'',''players'',''standings'',''stats'',''quit''].contains(cmd)<br>output(''Invalid command (`{{cmd}}`)'')"| cmdlp0
 
     cmdlp2 -->|"output(''Enter (old) password:'')<br>input(old_passwd)"| cmdlp4
@@ -47,7 +47,7 @@ graph TD
     cmdlp6 -->|"?(passwd == '''')<br>output(''Invalid password'')"| cmdlp5
     cmdlp6 -->|"?(passwd != '''')<br>db.set_passwd(uname,new_passwd)"| cmdlp0
 
-    cmdlp3 ---->|"?(timeout({{play_timeout}}))<br>output(''Sorry, no opponents are ready to play.'')"| cmdlp0
+    cmdlp3 ---->|"?(timeout({{play_timeout}}))<br>output(''Sorry, no opponents are ready to battle.'')"| cmdlp0
     cmdlp3 ---->|"?(!timeout({{play_timeout}}) && opponent = play.request(uname))"| play0
 
     cmdlp_disconnect --> logout

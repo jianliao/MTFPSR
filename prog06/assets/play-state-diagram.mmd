@@ -27,10 +27,10 @@ graph TD
       logout([logout])
     end
 
-    cmdlp0 ---->|"output(''Enter command {passwd,play,players,stats,quit} [{{command_timeout}} timeout]'')<br>input(cmd)"| cmdlp1
+    cmdlp0 ---->|"output(''Enter command {passwd,play,players,stats,quit} [{{command_timeout}}s timeout]:'')<br>input(cmd)"| cmdlp1
     cmdlp1 -->|"?(!timeout({{command_timeout}}) && cmd == ''play'')<br>output(''Waiting for opponent [{{play_timeout}} timeout]'')"| cmdlp3
     cmdlp3 ---->|"?(!timeout({{play_timeout}}) && opponent = play.request(uname))"| play0
-    cmdlp3 ---->|"?(timeout({{play_timeout}}))<br>output(''Sorry, no opponents are ready to play.'')"| cmdlp0
+    cmdlp3 ---->|"?(timeout({{play_timeout}}))<br>output(''Sorry, no opponents are ready to battle.'')"| cmdlp0
 
 
     play0 -->|"output(''{uname} versus {opponent}!!'')"| play1
@@ -42,7 +42,7 @@ graph TD
 
     play3 -->|"wtimeout = wstime + {{weapon_timeout}} - now()"| play4
 
-    play4 ---->|"output(''Choose your weapon {r,p,s} [{{wtimeout}} timeout]'')<br>input(wstr)"| play5
+    play4 ---->|"output(''Choose your weapon {r,p,s} [{{wtimeout}}s timeout]:'')<br>input(wstr)"| play5
     play4 -->|"<disconnect>"| play2
 
     play5 ---->|"?(timeout(wtimeout))<br>weapon = None"| play6
@@ -53,7 +53,7 @@ graph TD
 
     play6 -->|"(oweapon,outcome) = play.finish(weapon)<br>db.inc_stats_by_outcome(uname,outcome)"| play8
 
-    play7 -->|"output(''Invalid weapon ({{wstr}}''))"| play3
+    play7 -->|"output(''Invalid weapon (`{{wstr}}`)'')"| play3
     play7 -->|"<disconnect>"| play2
 
     play8 ---->|"output(''{{opponent}}} plays {{oweapon}}; you {{outcome}}!'')"| cmdlp0

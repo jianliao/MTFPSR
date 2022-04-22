@@ -29,7 +29,7 @@ graph TD
 
     login1 ---->|"output(''Enter username:'')<br>input(uname)"| login2
 
-    login2 -->|"?(!alphanumeric(uname))<br/>output(''Invalid username'')"| login1
+    login2 -->|"?(!alphanumeric(uname))<br/>output(''Invalid username (`{{uname}}`)'')"| login1
     login2 -->|"?(alphanumeric(uname) && !db.has_key(uname))<br/>output(''Welcome new user!'')"| login3
     login2 -->|"?(alphanumeric(uname) && db.has_key(uname))"| login4
 
