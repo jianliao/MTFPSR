@@ -28,8 +28,32 @@ fn main() {
 }
 
 fn newlines_words_chars(src: &str) -> (u64, u64, u64) {
-    // Your code here
-    unimplemented!();
+    const NEWLINE: char = '\u{000A}';
+
+    let mut newline_counter: u64 = 0;
+    let mut word_counter: u64 = 0;
+    let mut char_counter: u64 = 0;
+    let mut start_word: bool = false;
+
+    for c in src.chars() {
+        char_counter += 1;
+        if NEWLINE == c {
+            newline_counter += 1;
+        }
+
+        if start_word == true && (NEWLINE == c || c.is_ascii_whitespace() == true) {
+            word_counter += 1;
+            start_word = false;
+        } else if start_word == false && NEWLINE != c && c.is_ascii_whitespace() == false {
+            start_word = true;
+        }
+    }
+
+    if start_word == true {
+        word_counter += 1;
+    };
+
+    (newline_counter, word_counter, char_counter)
 }
 
 #[cfg(test)]
