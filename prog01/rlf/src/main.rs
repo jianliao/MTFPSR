@@ -23,23 +23,31 @@ fn main() {
             .expect("Failed to read stdin");
         buf
     };
+
     // Your code here
-    unimplemented!();
+    for (i, el) in letter_freq(&src).iter().filter(|i| **i != 0.0).enumerate() {
+        println!("{}: {:.3}%", (b'A' + i as u8) as char, *el * 100.0);
+    }
 }
 
 fn letter_count(src: &str) -> [u64; 26] {
-    // Your code here
-    unimplemented!();
+    let mut res: [u64; 26] = [0; 26];
+    for c in src.chars() {
+        if c.is_ascii_alphabetic() {
+            let index: usize = c.to_ascii_lowercase() as usize - 'a' as usize;
+            res[index] += 1;
+        }
+    }
+    res
 }
 
 fn count_to_freq(inp: [u64; 26]) -> [f64; 26] {
-    // Your code here
-    unimplemented!();
+    let total: u64 = inp.iter().sum();
+    inp.map(|i| i as f64 / total as f64)
 }
 
 fn letter_freq(src: &str) -> [f64; 26] {
-    // Your code here
-    unimplemented!();
+    count_to_freq(letter_count(src))
 }
 
 #[cfg(test)]

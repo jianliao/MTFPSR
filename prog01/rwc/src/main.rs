@@ -41,15 +41,15 @@ fn newlines_words_chars(src: &str) -> (u64, u64, u64) {
             newline_counter += 1;
         }
 
-        if start_word == true && (NEWLINE == c || c.is_ascii_whitespace() == true) {
+        if start_word && (NEWLINE == c || c.is_ascii_whitespace()) {
             word_counter += 1;
             start_word = false;
-        } else if start_word == false && NEWLINE != c && c.is_ascii_whitespace() == false {
+        } else if !start_word  && NEWLINE != c && !c.is_ascii_whitespace()  {
             start_word = true;
         }
     }
 
-    if start_word == true {
+    if start_word {
         word_counter += 1;
     };
 
