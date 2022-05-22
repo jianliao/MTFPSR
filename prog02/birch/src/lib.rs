@@ -61,13 +61,74 @@ impl Display for Prog {
     }
 }
 
+fn parse_commands<'a, I>(
+    words_iterator: &mut I,
+    is_sub_sequence: bool,
+) -> Result<Vec<Command>, ProgParseError>
+where
+    I: Iterator<Item = &'a str>,
+{
+    let mut cmds: Vec<Command> = vec![];
+    loop {
+        match words_iterator.next() {
+            Some(w) => {
+                let cmd: Command = match w {
+                    "add" => Command::Add,
+                    "sub" => Command::Sub,
+                    "mul" => Command::Mul,
+                    "div" => Command::Div,
+                    "rem" => Command::Rem,
+                    "eq" => Command::Eq,
+                    "lt" => Command::Lt,
+                    "gt" => Command::Gt,
+                    "ifz" => Command::Ifz,
+                    "dup" => Command::Dup,
+                    "pop" => Command::Pop,
+                    "swap" => Command::Swap,
+                    "rev" => Command::Rev,
+                    "exec" => Command::Exec,
+                    "[" => Command::Cmds(match parse_commands(words_iterator, true) {
+                        Ok(sub_cmds) => sub_cmds,
+                        Err(_) => return Err(ProgParseError),
+                    }),
+                    "]" => {
+                        if !is_sub_sequence {
+                            return Err(ProgParseError);
+                        } else {
+                            break;
+                        }
+                    }
+                    x => match x.parse::<i64>() {
+                        Ok(n) => Command::Num(n),
+                        Err(_) => return Err(ProgParseError),
+                    },
+                };
+                cmds.push(cmd);
+            }
+            None => {
+                if is_sub_sequence {
+                    return Err(ProgParseError);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    cmds.reverse();
+    Ok(cmds)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ProgParseError;
 impl FromStr for Prog {
     type Err = ProgParseError;
     fn from_str(s: &str) -> Result<Prog, ProgParseError> {
         // Your code here
-        unimplemented!()
+        // unimplemented!()
+        Ok(Prog(parse_commands(
+            &mut s.split_ascii_whitespace(),
+            false,
+        )?))
     }
 }
 
