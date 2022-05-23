@@ -129,32 +129,32 @@ impl FromStr for Prog {
 pub struct ProgExecError;
 
 #[derive(Debug)]
-struct CmdStack(Vec<Command>);
-impl Display for CmdStack {
+struct CmdStack<'a>(Vec<&'a Command>);
+impl Display for CmdStack<'_> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         fmt_slice_rev(&self.0[..], f)
     }
 }
-impl CmdStack {
-    fn new(prog: &Prog) -> Self {
+impl<'a> CmdStack<'a> {
+    fn new(prog: &'a Prog) -> Self {
         // Your code here
-        CmdStack(prog.0.to_owned())
+        CmdStack(prog.0.iter().collect())
     }
     // Your code here; additional methods as necessary
-    fn pop(&mut self) -> Option<Command> {
+    fn pop(&mut self) -> Option<&'a Command> {
         self.0.pop()
     }
-    fn push(&mut self, c: Command) {
+    fn push(&mut self, c: &'a Command) {
         self.0.push(c);
     }
 }
 
 #[derive(Debug, Clone)]
-enum DataElem {
+enum DataElem<'a> {
     Num(i64),
-    Cmds(Vec<Command>),
+    Cmds(&'a [Command]),
 }
-impl Display for DataElem {
+impl Display for DataElem<'_> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             DataElem::Num(n) => n.fmt(f),
@@ -172,27 +172,27 @@ impl Display for DataElem {
 }
 
 #[derive(Debug)]
-struct DataStack(Vec<DataElem>);
-impl Display for DataStack {
+struct DataStack<'a>(Vec<DataElem<'a>>);
+impl Display for DataStack<'_> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         fmt_slice_rev(&self.0[..], f)
     }
 }
-impl DataStack {
+impl<'a> DataStack<'a> {
     fn new() -> Self {
         DataStack(Vec::new())
     }
-    fn push(&mut self, de: DataElem) {
+    fn push(&mut self, de: DataElem<'a>) {
         self.0.push(de)
     }
-    fn pop(&mut self) -> Result<DataElem, ProgExecError> {
+    fn pop(&mut self) -> Result<DataElem<'a>, ProgExecError> {
         match self.0.pop() {
             Some(de) => Ok(de),
             _ => Err(ProgExecError),
         }
     }
     // Your code here; additional methods as necessary
-    fn clone_index_from_stack_bottom(&mut self, i: i64) -> Result<DataElem, ProgExecError> {
+    fn clone_index_from_stack_bottom(&mut self, i: i64) -> Result<DataElem<'a>, ProgExecError> {
         let i: usize = i.abs() as usize;
         if i > self.0.len() - 1 {
             Err(ProgExecError)
@@ -200,7 +200,7 @@ impl DataStack {
             Ok(self.0[i].clone())
         }
     }
-    fn clone_index_from_stack_top(&mut self, i: i64) -> Result<DataElem, ProgExecError> {
+    fn clone_index_from_stack_top(&mut self, i: i64) -> Result<DataElem<'a>, ProgExecError> {
         let index: i64 = self.0.len() as i64 - i - 1;
         if index > self.0.len() as i64 - 1 || index < 0 {
             Err(ProgExecError)
@@ -227,47 +227,10 @@ impl Prog {
             if trace {
                 println!("step: {}\ncstk: {}\ndstk: {}\n", step, cstk, dstk)
             };
-            // Your code here
+
             match cstk.pop() {
-                None => break,
                 Some(cmd) => match cmd {
-                    Command::Ifz => {
-                        let e1 = dstk.pop()?;
-                        let e2 = dstk.pop()?;
-                        let e3 = dstk.pop()?;
-                        match e1 {
-                            DataElem::Num(i) => {
-                                if i == 0 {
-                                    dstk.push(e2)
-                                } else {
-                                    dstk.push(e3)
-                                }
-                            }
-                            DataElem::Cmds(cmds) if cmds.len() == 0 => {
-                                // Empty sub sequence means none zero ???
-                                dstk.push(e3)
-                            }
-                            DataElem::Cmds(cmds) => {
-                                dstk.push(e3);
-                                dstk.push(e2);
-                                cstk.push(Command::Ifz);
-                                for cmd in cmds {
-                                    cstk.push(cmd);
-                                }
-                            }
-                        }
-                    }
-                    Command::Num(i) => dstk.push(DataElem::Num(i)),
-                    Command::Gt => match (dstk.pop()?, dstk.pop()?) {
-                        (DataElem::Num(l), DataElem::Num(r)) => {
-                            if l > r {
-                                dstk.push(DataElem::Num(1))
-                            } else {
-                                dstk.push(DataElem::Num(0))
-                            }
-                        }
-                        _ => return Err(ProgExecError),
-                    },
+                    Command::Num(i) => dstk.push(DataElem::Num(*i)),
                     Command::Add => match (dstk.pop()?, dstk.pop()?) {
                         (DataElem::Num(l), DataElem::Num(r)) => dstk.push(DataElem::Num(l + r)),
                         _ => return Err(ProgExecError),
@@ -312,6 +275,42 @@ impl Prog {
                         }
                         _ => return Err(ProgExecError),
                     },
+                    Command::Gt => match (dstk.pop()?, dstk.pop()?) {
+                        (DataElem::Num(l), DataElem::Num(r)) => {
+                            if l > r {
+                                dstk.push(DataElem::Num(1))
+                            } else {
+                                dstk.push(DataElem::Num(0))
+                            }
+                        }
+                        _ => return Err(ProgExecError),
+                    },
+                    Command::Ifz => {
+                        let e1 = dstk.pop()?;
+                        let e2 = dstk.pop()?;
+                        let e3 = dstk.pop()?;
+                        match e1 {
+                            DataElem::Num(i) => {
+                                if i == 0 {
+                                    dstk.push(e2);
+                                } else {
+                                    dstk.push(e3);
+                                }
+                            }
+                            DataElem::Cmds(cmds) if cmds.is_empty() => {
+                                // Empty sub sequence means none zero ???
+                                dstk.push(e3);
+                            }
+                            DataElem::Cmds(cmds) => {
+                                dstk.push(e3);
+                                dstk.push(e2);
+                                cstk.push(&Command::Ifz);
+                                for cmd in cmds {
+                                    cstk.push(cmd);
+                                }
+                            }
+                        }
+                    }
                     Command::Dup => {
                         if let DataElem::Num(n) = dstk.pop()? {
                             if n < 0 {
@@ -351,7 +350,8 @@ impl Prog {
                         }
                     },
                 },
-            };
+                None => break,
+            }
 
             step += 1;
         }
@@ -359,9 +359,9 @@ impl Prog {
         match dstk.pop() {
             Ok(i) => match i {
                 DataElem::Num(i) => Ok(i),
-                DataElem::Cmds(_) => return Err(ProgExecError),
+                DataElem::Cmds(_) => Err(ProgExecError),
             },
-            Err(_) => return Err(ProgExecError),
+            Err(_) => Err(ProgExecError),
         }
     }
 }
