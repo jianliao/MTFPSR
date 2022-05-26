@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use std::collections::VecDeque;
 use std::hash::Hash;
 use std::marker::Sized;
 
@@ -85,7 +87,26 @@ where
     P::Move: Clone,
 {
     // Your code here
-    unimplemented!()
+    let mut visited: HashMap<P, Vec<P::Move>> = HashMap::new();
+    let mut todos: VecDeque<P> = VecDeque::new();
+    visited.insert(p0.clone(), vec![]); // Marked it as visited
+    todos.push_back(p0);
+    while !todos.is_empty() {
+        let p = todos.pop_front().unwrap();
+        if p.is_goal() {
+            return Some((visited.get(&p).unwrap().clone(), p));
+        }
+        for (m, q) in p.next() {
+            if !visited.contains_key(&q) {
+                let mut new_ms = visited.get(&p).unwrap().to_vec(); // Create a new vector from cloning all previous moves
+                new_ms.push(m); // Push new move 
+                visited.insert(q.clone(), new_ms); // Marked it as visited and associate m
+                todos.push_back(q);
+            }
+        }
+    }
+
+    None
 }
 
 #[allow(clippy::type_complexity)]
