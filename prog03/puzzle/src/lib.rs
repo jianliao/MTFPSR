@@ -98,9 +98,9 @@ where
         }
         for (m, q) in p.next() {
             if !visited.contains_key(&q) {
-                let mut new_ms = visited.get(&p).unwrap().to_vec(); // Create a new vector from cloning all previous moves
-                new_ms.push(m); // Push new move 
-                visited.insert(q.clone(), new_ms); // Marked it as visited and associate m
+                let mut new_ms: Vec<<P as Puzzle>::Move> = visited.get(&p).unwrap().to_vec(); // Create a new vector from cloning all previous moves
+                new_ms.push(m); // Push new move
+                visited.insert(q.clone(), new_ms); // Marked it as visited and associate a move
                 todos.push_back(q);
             }
         }
