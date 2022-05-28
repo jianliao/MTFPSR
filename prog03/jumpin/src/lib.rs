@@ -378,7 +378,25 @@ impl JumpIN {
     /// gameboard to `None` and update `posd` in the new gameboard to `Some`.
     fn move_rabbit(&self, pos: Pos, dir: Direction) -> Option<(Object, Self)> {
         // Your code here
-        unimplemented!()
+        match (self.get(pos), pos.step(dir)) {
+            (Some(obj), Some(mut next_pos)) => {
+                if obj.is_rabbit() && self.get(next_pos).is_some() {
+                    while let Some(_) = next_pos.step(dir) {
+                        if let None = self.get(next_pos.step(dir).unwrap()) {
+                            let posd = next_pos.step(dir).unwrap();
+                            let mut new_gameboard = self.clone(); // copy the current gameboard into a new gameboard
+                            let new_obj = obj.clone(); // clone a new rabbit
+                            *new_gameboard.get_mut(posd) = Some(new_obj); // update `posd` in the new gameboard to `Some`
+                            *new_gameboard.get_mut(pos) = None; // update `pos` in the new gameboard tp `None`
+                            return Some((new_obj, new_gameboard));
+                        }
+                        next_pos = next_pos.step(dir).unwrap();
+                    }
+                }
+            },
+            (_, _) => return None,
+        }
+        None
     }
 
     /// Attempt to move a fox at position `pos` in the direction `dir`;
@@ -399,7 +417,28 @@ impl JumpIN {
     /// gameboard.
     fn move_fox(&self, pos: Pos, dir: Direction) -> Option<(Object, Self)> {
         // Your code here
-        unimplemented!()
+        match (pos.step(dir.rev()), pos.step(dir)) {
+            (Some(posb), Some(posf)) => match (self.get(posb), self.get(pos), self.get(posf)) {
+                (Some(fox_1), Some(fox_2), None) => {
+                    if fox_2.is_foxmatch(fox_1) {
+                        let mut new_gameboard = self.clone();
+                        let new_fox_1 = fox_1.clone();
+                        let new_fox_2 = fox_2.clone();
+                        *new_gameboard.get_mut(posf) = Some(new_fox_2);
+                        *new_gameboard.get_mut(pos) = Some(new_fox_1);
+                        *new_gameboard.get_mut(posb) = None;
+                        if new_fox_2.is_foxhead() {
+                            return Some((new_fox_2, new_gameboard));
+                        } else {
+                            return Some((new_fox_1, new_gameboard));
+                        }
+                    }
+                }
+                (_, _, _) => return None,
+            },
+            (_, _) => return None,
+        }
+        None
     }
 }
 
