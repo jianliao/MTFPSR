@@ -76,7 +76,7 @@ impl Pos {
             || ((x == 1 || x == 3 || x == 5) && (y == 0 || y == 2 || y == 4 || y == 6))
     }
 
-    fn can_put_none_wall(&self) -> bool {
+    fn can_put_none_wall_object(&self) -> bool {
         !self.is_corner() && !self.is_wall()
     }
 
@@ -143,16 +143,16 @@ impl Display for Pos {
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Farm {
     pub map: [[Option<Object>; 7]; 7],
-    pub ufo_initial_pos: Option<Pos>,
-    pub cattle_initial_counter: i32,
+    pub ufo_pos: Option<Pos>,
+    pub cattle_number: i32,
 }
 
 impl Farm {
     pub fn new() -> Self {
         Farm {
             map: [[None; 7]; 7],
-            ufo_initial_pos: None,
-            cattle_initial_counter: 0,
+            ufo_pos: None,
+            cattle_number: 0,
         }
     }
 }
@@ -179,7 +179,7 @@ impl FromStr for Farm {
                     None => return Err(FarmParseError),
                     Some(c) => match c {
                         ' ' => {
-                            if !pos.can_put_none_wall() {
+                            if !pos.can_put_none_wall_object() {
                                 return Err(FarmParseError);
                             }
                         }
@@ -205,55 +205,55 @@ impl FromStr for Farm {
                             }
                         }
                         'U' => {
-                            if pos.can_put_none_wall() && !has_ufo {
+                            if pos.can_put_none_wall_object() && !has_ufo {
                                 has_ufo = true;
                                 farm.map[x][y] = Some(Object::Ufo);
-                                farm.ufo_initial_pos = Some(Pos::new(x, y));
+                                farm.ufo_pos = Some(Pos::new(x, y));
                             } else {
                                 return Err(FarmParseError);
                             }
                         }
                         'A' => {
-                            if pos.can_put_none_wall() && !has_azure {
+                            if pos.can_put_none_wall_object() && !has_azure {
                                 has_azure = true;
                                 farm.map[x][y] = Some(Object::AzureCow);
-                                farm.cattle_initial_counter += 1;
+                                farm.cattle_number += 1;
                             } else {
                                 return Err(FarmParseError);
                             }
                         }
                         'Y' => {
-                            if pos.can_put_none_wall() && !has_yellow {
+                            if pos.can_put_none_wall_object() && !has_yellow {
                                 has_yellow = true;
                                 farm.map[x][y] = Some(Object::YellowCow);
-                                farm.cattle_initial_counter += 1;
+                                farm.cattle_number += 1;
                             } else {
                                 return Err(FarmParseError);
                             }
                         }
                         'P' => {
-                            if pos.can_put_none_wall() && !has_purple {
+                            if pos.can_put_none_wall_object() && !has_purple {
                                 has_purple = true;
                                 farm.map[x][y] = Some(Object::PurpleCow);
-                                farm.cattle_initial_counter += 1;
+                                farm.cattle_number += 1;
                             } else {
                                 return Err(FarmParseError);
                             }
                         }
                         'O' => {
-                            if pos.can_put_none_wall() && !has_orange {
+                            if pos.can_put_none_wall_object() && !has_orange {
                                 has_orange = true;
                                 farm.map[x][y] = Some(Object::OrangeCow);
-                                farm.cattle_initial_counter += 1;
+                                farm.cattle_number += 1;
                             } else {
                                 return Err(FarmParseError);
                             }
                         }
                         'R' => {
-                            if pos.can_put_none_wall() && !has_red {
+                            if pos.can_put_none_wall_object() && !has_red {
                                 has_red = true;
                                 farm.map[x][y] = Some(Object::RedBull);
-                                farm.cattle_initial_counter += 1;
+                                farm.cattle_number += 1;
                             } else {
                                 return Err(FarmParseError);
                             }
@@ -287,7 +287,7 @@ impl FromStr for Farm {
                             }
                         }
                         'S' => {
-                            if pos.can_put_none_wall() && !has_silo {
+                            if pos.can_put_none_wall_object() && !has_silo {
                                 has_silo = true;
                                 farm.map[x][y] = Some(Object::Silo);
                             } else {
@@ -362,15 +362,15 @@ pub struct IotCS<'a> {
     farm: &'a Farm,
     current_ufo_pos: Pos,
     beamed_up_cattles: String,
-    current_cattle_count: i32,
+    remain_cattle_num: i32,
 }
 impl<'a> IotCS<'a> {
     pub fn new(farm: &'a Farm) -> Self {
         IotCS {
             farm,
-            current_ufo_pos: farm.ufo_initial_pos.unwrap(),
+            current_ufo_pos: farm.ufo_pos.expect("should have a ufo"),
             beamed_up_cattles: String::from("U:"),
-            current_cattle_count: farm.cattle_initial_counter,
+            remain_cattle_num: farm.cattle_number,
         }
     }
     pub fn ufo_with_cattle_to_string(&self) -> String {
@@ -385,7 +385,7 @@ impl<'a> Puzzle for IotCS<'a> {
     fn is_goal(&self) -> bool {
         // Your code here
         self.current_ufo_pos.is_on_side()
-            && self.current_cattle_count == 0
+            && self.remain_cattle_num == 0
             && self
                 .beamed_up_cattles
                 .chars()
@@ -410,76 +410,79 @@ impl<'a> Puzzle for IotCS<'a> {
                                 match new_obj {
                                     Object::AzureCow => {
                                         let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut current_cattle_count = self.current_cattle_count;
+                                        let mut remain_cattle_num = self.remain_cattle_num;
                                         if !has_beamed_up('A') {
                                             beamed_up_cattles.push('A');
-                                            current_cattle_count = self.current_cattle_count - 1;
+                                            remain_cattle_num = self.remain_cattle_num - 1;
                                         }
                                         let new_state = IotCS {
                                             farm: self.farm,
                                             current_ufo_pos: new_pos,
                                             beamed_up_cattles,
-                                            current_cattle_count,
+                                            remain_cattle_num,
                                         };
                                         res.push((dir, new_state));
                                     }
                                     Object::OrangeCow => {
                                         let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut current_cattle_count = self.current_cattle_count;
+                                        let mut remain_cattle_num = self.remain_cattle_num;
                                         if !has_beamed_up('O') {
                                             beamed_up_cattles.push('O');
-                                            current_cattle_count = self.current_cattle_count - 1;
+                                            remain_cattle_num = self.remain_cattle_num - 1;
                                         }
                                         let new_state = IotCS {
                                             farm: self.farm,
                                             current_ufo_pos: new_pos,
                                             beamed_up_cattles,
-                                            current_cattle_count,
+                                            remain_cattle_num,
                                         };
                                         res.push((dir, new_state));
                                     }
                                     Object::PurpleCow => {
                                         let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut current_cattle_count = self.current_cattle_count;
+                                        let mut remain_cattle_num = self.remain_cattle_num;
                                         if !has_beamed_up('P') {
                                             beamed_up_cattles.push('P');
-                                            current_cattle_count = self.current_cattle_count - 1;
+                                            remain_cattle_num = self.remain_cattle_num - 1;
                                         }
                                         let new_state = IotCS {
                                             farm: self.farm,
                                             current_ufo_pos: new_pos,
                                             beamed_up_cattles,
-                                            current_cattle_count,
+                                            remain_cattle_num,
                                         };
                                         res.push((dir, new_state));
                                     }
                                     Object::YellowCow => {
                                         let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut current_cattle_count = self.current_cattle_count;
+                                        let mut remain_cattle_num = self.remain_cattle_num;
                                         if !has_beamed_up('Y') {
                                             beamed_up_cattles.push('Y');
-                                            current_cattle_count = self.current_cattle_count - 1;
+                                            remain_cattle_num = self.remain_cattle_num - 1;
                                         }
                                         let new_state = IotCS {
                                             farm: self.farm,
                                             current_ufo_pos: new_pos,
                                             beamed_up_cattles,
-                                            current_cattle_count,
+                                            remain_cattle_num,
                                         };
                                         res.push((dir, new_state));
                                     }
-                                    Object::RedBull if self.current_cattle_count == 1 || self.current_cattle_count == 0 => {
+                                    Object::RedBull
+                                        if self.remain_cattle_num == 1
+                                            || self.remain_cattle_num == 0 =>
+                                    {
                                         let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut current_cattle_count = self.current_cattle_count;
+                                        let mut remain_cattle_num = self.remain_cattle_num;
                                         if !has_beamed_up('R') {
                                             beamed_up_cattles.push('R');
-                                            current_cattle_count = self.current_cattle_count - 1;
+                                            remain_cattle_num = self.remain_cattle_num - 1;
                                         }
                                         let new_state = IotCS {
                                             farm: self.farm,
                                             current_ufo_pos: new_pos,
                                             beamed_up_cattles,
-                                            current_cattle_count,
+                                            remain_cattle_num,
                                         };
                                         res.push((dir, new_state));
                                     }
@@ -488,7 +491,7 @@ impl<'a> Puzzle for IotCS<'a> {
                                             farm: self.farm,
                                             current_ufo_pos: new_pos,
                                             beamed_up_cattles: self.beamed_up_cattles.clone(),
-                                            current_cattle_count: self.current_cattle_count,
+                                            remain_cattle_num: self.remain_cattle_num,
                                         };
                                         res.push((dir, new_state));
                                     }
@@ -501,7 +504,7 @@ impl<'a> Puzzle for IotCS<'a> {
                                         farm: self.farm,
                                         current_ufo_pos: new_pos,
                                         beamed_up_cattles: self.beamed_up_cattles.clone(),
-                                        current_cattle_count: self.current_cattle_count,
+                                        remain_cattle_num: self.remain_cattle_num,
                                     },
                                 ));
                             }
@@ -510,11 +513,11 @@ impl<'a> Puzzle for IotCS<'a> {
                 };
                 match self.farm.map[x][y] {
                     Some(obj) => match obj {
-                        Object::Barn => try_move_ufo(3),
-                        Object::CropRow => try_move_ufo(4),
-                        Object::Fences => try_move_ufo(5),
-                        Object::HayBale => try_move_ufo(6),
-                        Object::WallPlacehoder => try_move_ufo(8),
+                        Object::Barn => try_move_ufo(3), // As "U:".len() is 2, so 3 - 2 = 1
+                        Object::CropRow => try_move_ufo(4), // 4 - 2 = 2
+                        Object::Fences => try_move_ufo(5), // 5 - 2 = 3
+                        Object::HayBale => try_move_ufo(6), // 6 - 2 = 4
+                        Object::WallPlacehoder => try_move_ufo(std::usize::MAX), // No limit as there is no wall
                         _ => {}
                     },
                     None => {}
