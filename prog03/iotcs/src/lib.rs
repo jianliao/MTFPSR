@@ -123,11 +123,6 @@ impl Pos {
         };
         Some(Pos::new(x, y))
     }
-
-    /// An iterator over all positions of the gameboard.
-    pub fn values() -> impl Iterator<Item = Self> {
-        (0..6).flat_map(|y| (0..6).map(move |x| Pos::new(x, y)))
-    }
 }
 impl Display for Pos {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
@@ -405,95 +400,42 @@ impl<'a> Puzzle for IotCS<'a> {
                         if let Some(new_pos) = pos.step(dir) {
                             let (new_x, new_y) = new_pos.xy();
                             if let Some(new_obj) = self.farm.map[new_x][new_y] {
-                                let has_beamed_up =
-                                    |name: char| -> bool { self.beamed_up_cattles.contains(name) };
+                                let mut gen_new_move = |cattle_name_initial: char| {
+                                    let mut beamed_up_cattles = self.beamed_up_cattles.clone();
+                                    let mut remain_cattle_num = self.remain_cattle_num;
+                                    if !self.beamed_up_cattles.contains(cattle_name_initial) {
+                                        beamed_up_cattles.push(cattle_name_initial);
+                                        remain_cattle_num = self.remain_cattle_num - 1;
+                                    }
+                                    let new_state = IotCS {
+                                        farm: self.farm,
+                                        current_ufo_pos: new_pos,
+                                        beamed_up_cattles,
+                                        remain_cattle_num,
+                                    };
+                                    res.push((dir, new_state));
+                                };
                                 match new_obj {
-                                    Object::AzureCow => {
-                                        let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut remain_cattle_num = self.remain_cattle_num;
-                                        if !has_beamed_up('A') {
-                                            beamed_up_cattles.push('A');
-                                            remain_cattle_num = self.remain_cattle_num - 1;
-                                        }
-                                        let new_state = IotCS {
-                                            farm: self.farm,
-                                            current_ufo_pos: new_pos,
-                                            beamed_up_cattles,
-                                            remain_cattle_num,
-                                        };
-                                        res.push((dir, new_state));
-                                    }
-                                    Object::OrangeCow => {
-                                        let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut remain_cattle_num = self.remain_cattle_num;
-                                        if !has_beamed_up('O') {
-                                            beamed_up_cattles.push('O');
-                                            remain_cattle_num = self.remain_cattle_num - 1;
-                                        }
-                                        let new_state = IotCS {
-                                            farm: self.farm,
-                                            current_ufo_pos: new_pos,
-                                            beamed_up_cattles,
-                                            remain_cattle_num,
-                                        };
-                                        res.push((dir, new_state));
-                                    }
-                                    Object::PurpleCow => {
-                                        let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut remain_cattle_num = self.remain_cattle_num;
-                                        if !has_beamed_up('P') {
-                                            beamed_up_cattles.push('P');
-                                            remain_cattle_num = self.remain_cattle_num - 1;
-                                        }
-                                        let new_state = IotCS {
-                                            farm: self.farm,
-                                            current_ufo_pos: new_pos,
-                                            beamed_up_cattles,
-                                            remain_cattle_num,
-                                        };
-                                        res.push((dir, new_state));
-                                    }
-                                    Object::YellowCow => {
-                                        let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut remain_cattle_num = self.remain_cattle_num;
-                                        if !has_beamed_up('Y') {
-                                            beamed_up_cattles.push('Y');
-                                            remain_cattle_num = self.remain_cattle_num - 1;
-                                        }
-                                        let new_state = IotCS {
-                                            farm: self.farm,
-                                            current_ufo_pos: new_pos,
-                                            beamed_up_cattles,
-                                            remain_cattle_num,
-                                        };
-                                        res.push((dir, new_state));
-                                    }
+                                    Object::AzureCow => gen_new_move('A'),
+                                    Object::OrangeCow => gen_new_move('O'),
+                                    Object::PurpleCow => gen_new_move('P'),
+                                    Object::YellowCow => gen_new_move('Y'),
                                     Object::RedBull
                                         if self.remain_cattle_num == 1
                                             || self.remain_cattle_num == 0 =>
                                     {
-                                        let mut beamed_up_cattles = self.beamed_up_cattles.clone();
-                                        let mut remain_cattle_num = self.remain_cattle_num;
-                                        if !has_beamed_up('R') {
-                                            beamed_up_cattles.push('R');
-                                            remain_cattle_num = self.remain_cattle_num - 1;
-                                        }
-                                        let new_state = IotCS {
-                                            farm: self.farm,
-                                            current_ufo_pos: new_pos,
-                                            beamed_up_cattles,
-                                            remain_cattle_num,
-                                        };
-                                        res.push((dir, new_state));
+                                        gen_new_move('R')
                                     }
                                     Object::Ufo => {
-                                        let new_state = IotCS {
-                                            farm: self.farm,
-                                            current_ufo_pos: new_pos,
-                                            beamed_up_cattles: self.beamed_up_cattles.clone(),
-                                            remain_cattle_num: self.remain_cattle_num,
-                                        };
-                                        res.push((dir, new_state));
+                                        res.push((
+                                            dir,
+                                            IotCS {
+                                                farm: self.farm,
+                                                current_ufo_pos: new_pos,
+                                                beamed_up_cattles: self.beamed_up_cattles.clone(),
+                                                remain_cattle_num: self.remain_cattle_num,
+                                            },
+                                        ));
                                     }
                                     _ => {}
                                 }
