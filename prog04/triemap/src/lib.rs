@@ -1,4 +1,5 @@
 use std::iter::{ExactSizeIterator, FromIterator, FusedIterator, Iterator};
+use std::mem;
 use std::ops::Index;
 
 use serde::{Deserialize, Serialize};
@@ -62,7 +63,10 @@ impl<V> TrieMap<V> {
     /// Hint: Use [`binary_search_by_key`](https://doc.rust-lang.org/stable/std/primitive.slice.html#method.binary_search_by_key).
     pub fn next(&self, c: char) -> Option<&Self> {
         // Your code here
-        unimplemented!()
+        match self.children.binary_search_by_key(&c, |(c, _)| *c) {
+            Ok(i) => Some(&self.children[i].1),
+            Err(_) => None,
+        }
     }
 
     /// Returns a reference to the value corresponding to the key.
@@ -73,7 +77,22 @@ impl<V> TrieMap<V> {
     /// Hint: Use [`binary_search_by_key`](https://doc.rust-lang.org/stable/std/primitive.slice.html#method.binary_search_by_key).
     pub fn get(&self, key: &str) -> Option<&V> {
         // Your code here
-        unimplemented!()
+        let mut current: &TrieMap<V> = self;
+        let mut key = key;
+        loop {
+            if let Some((first, remain_key)) = str_split_first(key) {
+                match current.children.binary_search_by_key(&first, |(c, _)| *c) {
+                    Ok(index) => {
+                        current = &current.children[index].1;
+                        key = remain_key;
+                    }
+                    Err(_) => return None,
+                }
+            } else {
+                break;
+            }
+        }
+        current.val.as_ref()
     }
 
     /// Returns `true` if the map contains a value for the specified key.
@@ -89,7 +108,22 @@ impl<V> TrieMap<V> {
     /// Hint: Use [`binary_search_by_key`](https://doc.rust-lang.org/stable/std/primitive.slice.html#method.binary_search_by_key).
     pub fn get_mut(&mut self, key: &str) -> Option<&mut V> {
         // Your code here
-        unimplemented!()
+        let mut current = self;
+        let mut key: &str = key;
+        loop {
+            if let Some((first, remain_key)) = str_split_first(key) {
+                match current.children.binary_search_by_key(&first, |(c, _)| *c) {
+                    Ok(index) => {
+                        current = &mut current.children[index].1;
+                        key = remain_key;
+                    }
+                    Err(_) => return None,
+                }
+            } else {
+                break;
+            }
+        }
+        current.val.as_mut()
     }
 
     /// Inserts a string/value pair into the map.
@@ -126,7 +160,49 @@ impl<V> TrieMap<V> {
     /// that incur bounds checks) are performed.
     pub fn insert(&mut self, key: &str, value: V) -> Option<V> {
         // Your code here
-        unimplemented!()
+        let insert_new = self.get(key).is_none();
+        if insert_new {
+            self.len += 1;
+        }
+        let mut current: &mut TrieMap<V> = self;
+        let mut key: &str = key;
+        loop {
+            if let Some((first, remain)) = str_split_first(key) {
+                match current.children.binary_search_by_key(&first, |(c, _)| *c) {
+                    Ok(index) => {
+                        current = &mut current.children[index].1;
+                        if insert_new {
+                            current.len += 1;
+                        }
+                        key = remain;
+                    }
+                    Err(index) => {
+                        let mut new_trie: TrieMap<V> = TrieMap::new();
+                        new_trie.len = 1;
+                        current.children.insert(index, (first, new_trie));
+                        current = &mut current.children[index].1;
+                        key = remain;
+                        loop {
+                            if let Some((new_first, remain)) = str_split_first(key) {
+                                let mut new_trie: TrieMap<V> = TrieMap::new();
+                                new_trie.len = 1;
+                                current.children.push((new_first, new_trie));
+                                current = &mut current.children[0].1; // only one element in children
+                                key = remain;
+                            } else {
+                                current.val = Some(value);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else {
+                // Found the key-value pair, do the replacement
+                return mem::replace(&mut current.val, Some(value));
+            }
+        }
+        None
     }
 
     /// Removes a key from the map, returning the value at the key if the key
@@ -174,7 +250,29 @@ impl<V> TrieMap<V> {
     /// establish that is not captured by iteration?
     pub fn remove(&mut self, key: &str) -> Option<V> {
         // Your code here
-        unimplemented!()
+        if key.is_empty() {
+            if !self.val.is_none() {
+                self.len -= 1;
+            }
+            return mem::replace(&mut self.val, None);
+        } else {
+            let (first, remain) = str_split_first(key)?;
+            match self.children.binary_search_by_key(&first, |(c, _)| *c) {
+                Ok(i) => {
+                    let child: &mut TrieMap<V> = &mut self.children[i].1;
+                    let res: Option<V> = child.remove(remain);
+                    if res.is_some() {
+                        if child.val.is_none() && child.children.is_empty() {
+                            self.children.remove(i);
+                        }
+                        self.len -= 1;
+                        return res;
+                    }
+                }
+                Err(_) => return None,
+            }
+        }
+        None
     }
 }
 
