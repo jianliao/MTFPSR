@@ -374,9 +374,9 @@ where
 /// [`into_iter`]: IntoIterator::into_iter
 pub struct IntoIter<V> {
     // Your code here
-
-    // A bogus field to supress compiler errors.
-    _bogus: V,
+    stack: Vec<(String, TrieMap<V>)>,
+    size: usize,
+    // prefix: String,
 }
 /// Conversion into an [`Iterator`].
 ///
@@ -399,7 +399,10 @@ impl<V> IntoIterator for TrieMap<V> {
     /// This method must be *O*(*1*).
     fn into_iter(self: TrieMap<V>) -> Self::IntoIter {
         // Your code here
-        unimplemented!()
+        let mut stack: Vec<(String, TrieMap<V>)> = vec![];
+        let len = self.len();
+        stack.push(("".to_owned(), self));
+        IntoIter { stack, size: len }
     }
 }
 impl<V> Iterator for IntoIter<V> {
@@ -419,7 +422,23 @@ impl<V> Iterator for IntoIter<V> {
     /// Hint: Recall that [`String`] implements [`Clone`].
     fn next(&mut self) -> Option<Self::Item> {
         // Your code here
-        unimplemented!()
+        loop {
+            if let Some((s, mut trie)) = self.stack.pop() {
+                trie.children.reverse();
+                for (c, t) in trie.children {
+                    let mut key: String = s.clone();
+                    key.push(c);
+                    self.stack.push((key, t));
+                }
+                if trie.val.is_some() {
+                    self.size = trie.len;
+                    return Some((s, trie.val?));
+                }
+            } else {
+                break;
+            }
+        }
+        None
     }
     /// Returns the bounds on the remaining length of the iterator.
     ///
@@ -436,7 +455,7 @@ impl<V> Iterator for IntoIter<V> {
     /// This method must be *O*(*1*).
     fn size_hint(&self) -> (usize, Option<usize>) {
         // Your code here
-        unimplemented!()
+        (self.size, Some(self.size))
     }
 }
 /// An iterator that knows its exact length.
