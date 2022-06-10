@@ -400,9 +400,9 @@ impl<V> IntoIterator for TrieMap<V> {
     fn into_iter(self: TrieMap<V>) -> Self::IntoIter {
         // Your code here
         let mut stack: Vec<(String, TrieMap<V>)> = vec![];
-        let len = self.len();
+        let size: usize = self.len();
         stack.push(("".to_owned(), self));
-        IntoIter { stack, size: len }
+        IntoIter { stack, size }
     }
 }
 impl<V> Iterator for IntoIter<V> {
@@ -424,8 +424,8 @@ impl<V> Iterator for IntoIter<V> {
         // Your code here
         loop {
             if let Some((s, mut trie)) = self.stack.pop() {
-                trie.children.reverse();
-                for (c, t) in trie.children {
+                trie.children.reverse(); // Need to reverse to maintain the alphabet order
+                for (c, t ) in trie.children {
                     let mut key: String = s.clone();
                     key.push(c);
                     self.stack.push((key, t));
@@ -492,9 +492,8 @@ impl<V> FusedIterator for IntoIter<V> {
 /// [`iter`]: TrieMap::iter
 pub struct IterMut<'a, V> {
     // Your code here
-
-    // A bogus field to supress compiler errors.
-    _bogus: &'a mut V,
+    stack: Vec<(String, &'a mut TrieMap<V>)>,
+    size: usize,
 }
 impl<V> TrieMap<V> {
     /// An iterator visiting all string/value pairs in lexicographic (i.e.,
@@ -505,7 +504,10 @@ impl<V> TrieMap<V> {
     /// This method must be *O*(*1*).
     pub fn iter_mut(&mut self) -> IterMut<V> {
         // Your code here
-        unimplemented!()
+        let mut stack: Vec<(String, &mut TrieMap<V>)> = vec![];
+        let size:usize = self.len();
+        stack.push(("".to_owned(), self));
+        IterMut { stack, size }
     }
 }
 impl<'a, V> Iterator for IterMut<'a, V> {
@@ -525,7 +527,23 @@ impl<'a, V> Iterator for IterMut<'a, V> {
     /// Hint: Recall that [`String`] implements [`Clone`].
     fn next(&mut self) -> Option<Self::Item> {
         // Your code here
-        unimplemented!()
+        loop {
+            if let Some((s, trie)) = self.stack.pop() {
+                // Need to reverse to maintain the alphabet order
+                for (c, t) in &mut trie.children.iter_mut().rev() {
+                    let mut key: String = s.clone();
+                    key.push(*c);
+                    self.stack.push((key, t));
+                }
+                if trie.val.is_some() {
+                    self.size = trie.len;
+                    return Some((s, trie.val.as_mut()?));
+                }
+            } else {
+                break;
+            }
+        }
+        None
     }
     /// Returns the bounds on the remaining length of the iterator.
     ///
@@ -542,7 +560,7 @@ impl<'a, V> Iterator for IterMut<'a, V> {
     /// This method must be *O*(*1*).
     fn size_hint(&self) -> (usize, Option<usize>) {
         // Your code here
-        unimplemented!()
+        (self.size, Some(self.size))
     }
 }
 /// An iterator that knows its exact length.
@@ -589,9 +607,8 @@ impl<'a, V> IntoIterator for &'a mut TrieMap<V> {
 /// [`iter`]: TrieMap::iter
 pub struct Iter<'a, V> {
     // Your code here
-
-    // A bogus field to supress compiler errors.
-    _bogus: &'a V,
+    stack: Vec<(String, &'a TrieMap<V>)>,
+    size: usize,
 }
 impl<V> TrieMap<V> {
     /// An iterator visiting all string/value pairs in lexicographic (i.e.,
@@ -602,7 +619,10 @@ impl<V> TrieMap<V> {
     /// This method must be *O*(*1*).
     pub fn iter(&self) -> Iter<V> {
         // Your code here
-        unimplemented!()
+        let mut stack: Vec<(String, &TrieMap<V>)> = vec![];
+        let size:usize = self.len();
+        stack.push(("".to_owned(), self));
+        Iter { stack, size }
     }
 }
 impl<'a, V> Iterator for Iter<'a, V> {
@@ -623,7 +643,23 @@ impl<'a, V> Iterator for Iter<'a, V> {
     /// Hint: Recall that [`String`] implements [`Clone`].
     fn next(&mut self) -> Option<Self::Item> {
         // Your code here
-        unimplemented!()
+        loop {
+            if let Some((s, trie)) = self.stack.pop() {
+                // Need to reverse to maintain the alphabet order
+                for (c, t) in &mut trie.children.iter().rev() {
+                    let mut key: String = s.clone();
+                    key.push(*c);
+                    self.stack.push((key, t));
+                }
+                if trie.val.is_some() {
+                    self.size = trie.len;
+                    return Some((s, trie.val.as_ref()?));
+                }
+            } else {
+                break;
+            }
+        }
+        None
     }
     /// Returns the bounds on the remaining length of the iterator.
     ///
@@ -640,7 +676,7 @@ impl<'a, V> Iterator for Iter<'a, V> {
     /// This method must be *O*(*1*).
     fn size_hint(&self) -> (usize, Option<usize>) {
         // Your code here
-        unimplemented!()
+        (self.size, Some(self.size))
     }
 }
 /// An iterator that knows its exact length.
