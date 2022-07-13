@@ -30,10 +30,10 @@ fn main() {
 fn newlines_words_chars(src: &str) -> (u64, u64, u64) {
     const NEWLINE: char = '\u{000A}';
 
-    let mut newline_counter: u64 = 0;
-    let mut word_counter: u64 = 0;
-    let mut char_counter: u64 = 0;
-    let mut start_word: bool = false;
+    let mut newline_counter = 0;
+    let mut word_counter = 0;
+    let mut char_counter = 0;
+    let mut start_word = false;
 
     for c in src.chars() {
         char_counter += 1;
@@ -56,6 +56,7 @@ fn newlines_words_chars(src: &str) -> (u64, u64, u64) {
     (newline_counter, word_counter, char_counter)
 }
 
+// Test module to avoid name confliction
 #[cfg(test)]
 mod tests {
     use crate::newlines_words_chars;
