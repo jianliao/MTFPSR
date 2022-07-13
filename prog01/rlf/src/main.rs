@@ -34,7 +34,8 @@ fn letter_count(src: &str) -> [u64; 26] {
     let mut res: [u64; 26] = [0; 26];
     for c in src.chars() {
         if c.is_ascii_alphabetic() {
-            let index: usize = c.to_ascii_lowercase() as usize - 'a' as usize;
+            // let index: usize = c.to_ascii_lowercase() as usize - 'a' as usize;
+            let index: usize = (c.to_ascii_lowercase() as u8 - b'a').into(); // Use byte literal
             res[index] += 1;
         }
     }
