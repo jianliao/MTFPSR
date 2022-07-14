@@ -68,11 +68,11 @@ fn parse_commands<'a, I>(
 where
     I: Iterator<Item = &'a str>,
 {
-    let mut cmds: Vec<Command> = vec![];
+    let mut cmds = vec![];
     loop {
         match word_iterator.next() {
             Some(w) => {
-                let cmd: Command = match w {
+                let cmd = match w {
                     "add" => Command::Add,
                     "sub" => Command::Sub,
                     "mul" => Command::Mul,
@@ -138,6 +138,7 @@ impl Display for CmdStack<'_> {
 impl<'a> CmdStack<'a> {
     fn new(prog: &'a Prog) -> Self {
         // Your code here
+        // Convert Vec<Command> to Vec<&Command> ==> Borrow instead of own
         CmdStack(prog.0.iter().collect())
     }
     // Your code here; additional methods as necessary
