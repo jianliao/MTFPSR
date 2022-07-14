@@ -139,7 +139,8 @@ impl<'a> CmdStack<'a> {
     fn new(prog: &'a Prog) -> Self {
         // Your code here
         // Convert Vec<Command> to Vec<&Command> ==> Borrow instead of own
-        CmdStack(prog.0.iter().collect())
+        let prog_cmds = prog.0.iter().collect();
+        CmdStack(prog_cmds)
     }
     // Your code here; additional methods as necessary
     fn pop(&mut self) -> Option<&'a Command> {
