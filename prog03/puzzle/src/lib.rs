@@ -87,18 +87,18 @@ where
     P::Move: Clone,
 {
     // Your code here
-    let mut visited: HashMap<P, Vec<P::Move>> = HashMap::new();
-    let mut todos: VecDeque<P> = VecDeque::new();
+    let mut visited = HashMap::new();
+    let mut todos = VecDeque::new();
     visited.insert(p0.clone(), vec![]); // Marked it as visited
     todos.push_back(p0);
     while !todos.is_empty() {
-        let p = todos.pop_front().unwrap();
+        let p = todos.pop_front()?;
         if p.is_goal() {
-            return Some((visited.get(&p).unwrap().clone(), p));
+            return Some((visited.get(&p)?.to_vec(), p));
         }
         for (m, q) in p.next() {
             if !visited.contains_key(&q) {
-                let mut new_ms: Vec<<P as Puzzle>::Move> = visited.get(&p).unwrap().to_vec(); // Create a new vector from cloning all previous moves
+                let mut new_ms = visited.get(&p)?.to_vec(); // Create a new vector from cloning all previous moves
                 new_ms.push(m); // Push new move
                 visited.insert(q.clone(), new_ms); // Marked it as visited and associate a move
                 todos.push_back(q);
